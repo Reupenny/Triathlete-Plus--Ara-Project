@@ -6,7 +6,7 @@ describe("TriathlonData Class Tests", () => {
     beforeEach(async () => {
         triathlonData = new TriathlonData();
         await triathlonData.database.init();
-        TriathlonData.trainingSessions = [];
+        // TriathlonData.trainingSessions = [];
     });
 
     afterEach((done) => {
@@ -174,6 +174,18 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.createMember(userName, fName, lName)).rejects.toThrow("User already exists!");
     });
 
+    test("createMember throws an error if userName is not a string", async () => {
+        await expect(triathlonData.createMember(123, "Alex", "Apple")).rejects.toThrow("Username must be a string");
+    });
+
+    test("createMember throws an error if fName is not a string", async () => {
+        await expect(triathlonData.createMember("user1", 123, "Apple")).rejects.toThrow("First name must be a string");
+    });
+
+    test("createMember throws an error if lName is not a string", async () => {
+        await expect(triathlonData.createMember("user1", "Alex", 123)).rejects.toThrow("Last name must be a string");
+    });
+
     test("editTrainingSession edits an existing training session", async () => {
         // Sets up member for test
         await triathlonData.createMember("user1", "Alex", "Apple"); // create member
@@ -298,64 +310,14 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.deleteTrainingSession(session.sessionID)).rejects.toThrow("You are not authorized to delete this session");
     });
 
-    test("initializeAndLoad initializes the database and loads training sessions", async () => {
-        // Create a new TriathlonData instance
-        const triathlonData = new TriathlonData();
-
-        // Mock the database.init and loadTrainingSessions methods
-        triathlonData.database.init = jest.fn();
-        triathlonData.loadTrainingSessions = jest.fn();
-
-        // Call the initializeAndLoad method
-        await triathlonData.initializeAndLoad();
-
-        // Assert that the database.init and loadTrainingSessions methods were called
-        expect(triathlonData.database.init).toHaveBeenCalled();
-        expect(triathlonData.loadTrainingSessions).toHaveBeenCalled();
-    });
-
-    test("loadTrainingSessions loads training sessions from the database", async () => {
-        // Create a new TriathlonData instance
-        const triathlonData = new TriathlonData();
-
-        // Mock the database.getAllData method
-        triathlonData.database.getAllData = jest.fn().mockResolvedValue([{ sessionID: "S0001" }]);
-
-        // Call the loadTrainingSessions method
-        await triathlonData.loadTrainingSessions();
-
-        // Assert that the database.getAllData method was called
-        expect(triathlonData.database.getAllData).toHaveBeenCalledWith("TrainingSessions");
-
-        // Assert that the trainingSessions array was updated
-        expect(TriathlonData.trainingSessions).toEqual([{ sessionID: "S0001" }]);
-    });
-
-    test("loadTrainingSessions does not update trainingSessions if getAllData returns null", async () => {
-        // Create a new TriathlonData instance
-        const triathlonData = new TriathlonData();
-
-        // Mock the database.getAllData method
-        triathlonData.database.getAllData = jest.fn().mockResolvedValue(null);
-
-        // Call the loadTrainingSessions method
-        await triathlonData.loadTrainingSessions();
-
-        // Assert that the database.getAllData method was called
-        expect(triathlonData.database.getAllData).toHaveBeenCalledWith("TrainingSessions");
-
-        // Assert that the trainingSessions array was not updated
-        expect(TriathlonData.trainingSessions).toEqual([]);
-    });
-
     test("sortTrainingSessionsByDate sorts training sessions by date", async () => {
         // Sets up member for test
         await triathlonData.createMember("user1", "Alex", "Apple"); // create member
         await triathlonData.login("user1"); // login
 
-        const date1 = "2024-01-01";
-        const date2 = "2024-01-03";
-        const date3 = "2024-01-02";
+        const date1 = "1/1/2025";
+        const date2 = "3/1/2025";
+        const date3 = "2/1/2025";
 
         await triathlonData.CreateSwimmingSession(date1, "notes", 25, "Freestyle", [30, 32, 31], 27);
         await triathlonData.CreateSwimmingSession(date2, "notes", 25, "Freestyle", [30, 32, 31], 27);
@@ -452,127 +414,307 @@ describe("TriathlonData Class Tests", () => {
         expect(averagePace).toBe(`Average pace: ${expectedAveragePace.toFixed(2)} minutes per kilometer`);
     });
 
-    describe("searchTrainingSessions", () => {
-        test("returns a message if the user is not logged in", async () => {
-            await triathlonData.createMember("user1", "Alex", "Apple"); // create member
-            await triathlonData.login("user1"); // login
-            triathlonData.logout();
-            const result = await triathlonData.searchTrainingSessions("sportType", "Swimming");
-            expect(result).toEqual({ message: "Please log in to search for training sessions." });
+
+    test("returns a message if the user is not logged in", async () => {
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+        triathlonData.logout();
+        const result = await triathlonData.searchTrainingSessions("sportType", "Swimming");
+        expect(result).toEqual({ message: "Please log in to search for training sessions." });
+    });
+
+    test("searches by sportType", async () => {
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+        const date = new Date().toLocaleDateString('en-NZ');
+        await triathlonData.CreateSwimmingSession(date, "notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateSwimmingSession(date, "notes", 25, "Butterfly", [30, 32, 31], 27);
+        await triathlonData.CreateSwimmingSession(date, "notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateRunningSession(date, "notes", 10, 40, "Nike", 20, "Cloudy");
+        await triathlonData.CreateCyclingSession(date, "notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny");
+        const result = await triathlonData.searchTrainingSessions("sportType", "Swimming");
+        expect(Object.keys(result).length).toBe(3);
+        Object.values(result).forEach(session => {
+            expect(session.sportType).toBe("Swimming");
         });
+    });
 
-        test("searches by sportType", async () => {
-            await triathlonData.createMember("user1", "Alex", "Apple"); // create member
-            await triathlonData.login("user1"); // login
-            const date = new Date().toLocaleDateString('en-NZ');
-            await triathlonData.CreateSwimmingSession(date, "notes", 25, "Freestyle", [30, 32, 31], 27);
-            await triathlonData.CreateSwimmingSession(date, "notes", 25, "Butterfly", [30, 32, 31], 27);
-            await triathlonData.CreateSwimmingSession(date, "notes", 25, "Freestyle", [30, 32, 31], 27);
-            await triathlonData.CreateRunningSession(date, "notes", 10, 40, "Nike", 20, "Cloudy");
-            await triathlonData.CreateCyclingSession(date, "notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny");
-            const result = await triathlonData.searchTrainingSessions("sportType", "Swimming");
-            expect(Object.keys(result).length).toBe(3);
-            Object.values(result).forEach(session => {
-                expect(session.sportType).toBe("Swimming");
-            });
+    test("throws an error if notes is not a string", async () => {
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), 123, 25, "Freestyle", [30, 32, 31], 27)).rejects.toThrow("Notes must be a string.");
+    });
+
+    test("throws an error if lapLength is not a number", async () => {
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", "25", "Freestyle", [30, 32, 31], 27)).rejects.toThrow("Lap Length must be a number");
+    });
+
+    test("throws an error if strokeType is missing", async () => {
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, null, [30, 32, 31], 27)).rejects.toThrow("Stroke Type is required.");
+    });
+
+    test("throws an error if strokeType is not a string", async () => {
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, 123, [30, 32, 31], 27)).rejects.toThrow("Stroke Type must be a string.");
+    });
+
+    test("throws an error if waterTempiture is not a number", async () => {
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, "Freestyle", [30, 32, 31], "27")).rejects.toThrow("Water temperature must be a number.");
+    });
+
+    test("throws an error if lapLength is less than or equal to zero", async () => {
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 0, "Freestyle", [30, 32, 31], 27)).rejects.toThrow("Lap length must be greater than zero.");
+    });
+
+    test("throws an error if waterTempiture is less than 0 or greater than 40", async () => {
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, "Freestyle", [30, 32, 31], -1)).rejects.toThrow("Water temperature must be between 0 and 40 degrees Celsius.");
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, "Freestyle", [30, 32, 31], 41)).rejects.toThrow("Water temperature must be between 0 and 40 degrees Celsius.");
+    });
+
+    test("throws an error if date is not in the correct format (dd/MM/yyyy)", async () => {
+        await expect(triathlonData.CreateSwimmingSession("2025-01-01", "Test notes", 25, "Freestyle", [30, 32, 31], 27)).rejects.toThrow("Invalid date. Please use dd/MM/yyyy and ensure a valid date.");
+    });
+
+    test("throws an error if lapTimes is not an array", async () => {
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, "Freestyle", "30, 32, 31", 27)).rejects.toThrow("Lap times must be an array.");
+    });
+
+    test("throws an error if any lapTime in lapTimes is not a number or is less than or equal to zero", async () => {
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, "Freestyle", [30, "32", 31], 27)).rejects.toThrow("Lap times must be numbers greater than zero.");
+        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, "Freestyle", [30, 0, 31], 27)).rejects.toThrow("Lap times must be numbers greater than zero.");
+    });
+
+    test("handles missing date and uses the current date in 'en-NZ' format", async () => {
+        const session = await triathlonData.CreateSwimmingSession(null, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
+        expect(session.date).toEqual(new Date().toLocaleDateString('en-NZ'));
+    });
+
+
+    test("throws an error if notes is not a string", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), 123, 20, 60, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Notes must be a string.");
+    });
+
+    test("throws an error if distance is not a number", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", "20", 60, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Distance must be a number.");
+    });
+
+    test("throws an error if duration is not a number", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, "60", "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Duration must be a number.");
+    });
+
+    test("throws an error if duration is less than or equal to zero", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 0, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Duration must be greater than zero.");
+    });
+
+    test("throws an error if airTempiture is not a number", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, "Road", "Mountain Bike", "25", "Sunny")).rejects.toThrow("Air temperature must be a number.");
+    });
+
+    test("throws an error if terain is missing", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, null, "Mountain Bike", 25, "Sunny")).rejects.toThrow("Terrain is required.");
+    });
+
+    test("throws an error if terain is not a string", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, 123, "Mountain Bike", 25, "Sunny")).rejects.toThrow("Terrain must be a string.");
+    });
+
+    test("throws an error if bikeUsed is missing", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, "Road", null, 25, "Sunny")).rejects.toThrow("Bike Used is required.");
+    });
+
+    test("throws an error if bikeUsed is not a string", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, "Road", 123, 25, "Sunny")).rejects.toThrow("Bike Used must be a string.");
+    });
+
+    test("throws an error if weatherCondition is not a string", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, "Road", "Mountain Bike", 25, 123)).rejects.toThrow("Weather Condition must be a string.");
+    });
+
+    test("throws an error if distance is less than or equal to zero", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 0, 60, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Distance must be greater than zero.");
+    });
+
+    test("throws an error if airTempiture is less than -20 or greater than 50", async () => {
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, "Road", "Mountain Bike", -21, "Sunny")).rejects.toThrow("Air temperature must be between -20 and 50 degrees Celsius.");
+        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, "Road", "Mountain Bike", 51, "Sunny")).rejects.toThrow("Air temperature must be between -20 and 50 degrees Celsius.");
+    });
+
+    test("throws an error if date is not in the correct format (dd/MM/yyyy)", async () => {
+        await expect(triathlonData.CreateCyclingSession("2025-01-01", "Test notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Invalid date. Please use dd/MM/yyyy and ensure a valid date.");
+    });
+
+    test("handles missing date and uses the current date in 'en-NZ' format", async () => {
+        const session = await triathlonData.CreateCyclingSession(null, "Test notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny");
+        expect(session.date).toEqual(new Date().toLocaleDateString('en-NZ'));
+    });
+
+
+    test("throws an error if notes is not a string", async () => {
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), 123, 10, 40, "Nike", 20, "Cloudy")).rejects.toThrow("Notes must be a string.");
+    });
+
+    test("throws an error if distance is not a number", async () => {
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", "10", 40, "Nike", 20, "Cloudy")).rejects.toThrow("Distance must be a number.");
+    });
+
+    test("throws an error if duration is not a number", async () => {
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, "40", "Nike", 20, "Cloudy")).rejects.toThrow("Duration must be a number.");
+    });
+
+    test("throws an error if duration is less than or equal to zero", async () => {
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 0, "Nike", 20, "Cloudy")).rejects.toThrow("Duration must be greater than zero.");
+    });
+
+    test("throws an error if airTempiture is not a number", async () => {
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 40, "Nike", "20", "Cloudy")).rejects.toThrow("Air temperature must be a number.");
+    });
+
+    test("throws an error if shoesUsed is missing", async () => {
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 40, null, 20, "Cloudy")).rejects.toThrow("Shoes Used is required.");
+    });
+
+    test("throws an error if shoesUsed is not a string", async () => {
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 40, 123, 20, "Cloudy")).rejects.toThrow("Shoes Used must be a string.");
+    });
+
+    test("throws an error if weatherCondition is not a string", async () => {
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 40, "Nike", 20, 123)).rejects.toThrow("Weather Condition must be a string.");
+    });
+
+    test("throws an error if distance is less than or equal to zero", async () => {
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 0, 40, "Nike", 20, "Cloudy")).rejects.toThrow("Distance must be greater than zero.");
+    });
+
+    test("throws an error if airTempiture is less than -20 or greater than 50", async () => {
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 40, "Nike", -21, "Cloudy")).rejects.toThrow("Air temperature must be between -20 and 50 degrees Celsius.");
+        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 40, "Nike", 51, "Cloudy")).rejects.toThrow("Air temperature must be between -20 and 50 degrees Celsius.");
+    });
+
+    test("throws an error if date is not in the correct format (dd/MM/yyyy)", async () => {
+        await expect(triathlonData.CreateRunningSession("2025-01-01", "Test notes", 10, 40, "Nike", 20, "Cloudy")).rejects.toThrow("Invalid date. Please use dd/MM/yyyy and ensure a valid date.");
+    });
+
+    test("handles missing date and uses the current date in 'en-NZ' format", async () => {
+        const session = await triathlonData.CreateRunningSession(null, "Test notes", 10, 40, "Nike", 20, "Cloudy");
+        expect(session.date).toEqual(new Date().toLocaleDateString('en-NZ'));
+    });
+
+    test("returns a message if the user is not logged in", async () => {
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+        triathlonData.logout();
+        const result = await triathlonData.searchTrainingSessions("sportType", "Swimming");
+        expect(result).toEqual({ message: "Please log in to search for training sessions." });
+    });
+
+    test("searches by sportType", async () => {
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+        const date = new Date().toLocaleDateString('en-NZ');
+        await triathlonData.CreateSwimmingSession(date, "notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateSwimmingSession(date, "notes", 25, "Butterfly", [30, 32, 31], 27);
+        await triathlonData.CreateSwimmingSession(date, "notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateRunningSession(date, "notes", 10, 40, "Nike", 20, "Cloudy");
+        await triathlonData.CreateCyclingSession(date, "notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny");
+        const result = await triathlonData.searchTrainingSessions("sportType", "Swimming");
+        expect(Object.keys(result).length).toBe(3);
+        Object.values(result).forEach(session => {
+            expect(session.sportType).toBe("Swimming");
         });
+    });
 
-        test("searches by date", async () => {
-            await triathlonData.createMember("user1", "Alex", "Apple"); // create member
-            await triathlonData.login("user1"); // login
-            const date1 = new Date().toLocaleDateString('en-NZ');
-            const date2 = "2024-01-01";
-            const date3 = "2024-01-02";
-            await triathlonData.CreateSwimmingSession(date1, "notes", 25, "Freestyle", [30, 32, 31], 27);
-            await triathlonData.CreateRunningSession(date2, "notes", 10, 40, "Nike", 20, "Cloudy");
-            await triathlonData.CreateSwimmingSession(date1, "notes", 25, "Freestyle", [30, 32, 31], 27);
-            await triathlonData.CreateRunningSession(date3, "notes", 10, 40, "Nike", 20, "Cloudy");
-            const result = await triathlonData.searchTrainingSessions("date", date1);
-            expect(Object.keys(result).length).toBe(2);
-            Object.values(result).forEach(session => {
-                expect(session.date).toBe(date1);
-            });
+    test("searches by date", async () => {
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+        const date1 = new Date().toLocaleDateString('en-NZ');
+        const date2 = "1/1/2025";
+        const date3 = "2/1/2025";
+        await triathlonData.CreateSwimmingSession(date1, "notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateRunningSession(date2, "notes", 10, 40, "Nike", 20, "Cloudy");
+        await triathlonData.CreateSwimmingSession(date1, "notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateRunningSession(date3, "notes", 10, 40, "Nike", 20, "Cloudy");
+        const result = await triathlonData.searchTrainingSessions("date", date1);
+        expect(Object.keys(result).length).toBe(2);
+        Object.values(result).forEach(session => {
+            expect(session.date).toBe(date1);
         });
+    });
 
-        test("searches by notes", async () => {
-            await triathlonData.createMember("user1", "Alex", "Apple"); // create member
-            await triathlonData.login("user1"); // login
-            const date = new Date().toLocaleDateString('en-NZ');
-            await triathlonData.CreateSwimmingSession(date, "Test notes one", 25, "Freestyle", [30, 32, 31], 27);
-            await triathlonData.CreateRunningSession(date, "Some notes", 10, 40, "Nike", 20, "Cloudy");
-            await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
-            await triathlonData.CreateRunningSession(date, "Some notes", 10, 40, "Nike", 20, "Cloudy");
-            const result = await triathlonData.searchTrainingSessions("notes", "Test notes");
-            expect(Object.keys(result).length).toBe(2);
-            Object.values(result).forEach(session => {
-                expect(session.notes).toContain("Test notes");
-            });
+    test("searches by notes", async () => {
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+        const date = new Date().toLocaleDateString('en-NZ');
+        await triathlonData.CreateSwimmingSession(date, "Test notes one", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateRunningSession(date, "Some notes", 10, 40, "Nike", 20, "Cloudy");
+        await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateRunningSession(date, "Some notes", 10, 40, "Nike", 20, "Cloudy");
+        const result = await triathlonData.searchTrainingSessions("notes", "Test notes");
+        expect(Object.keys(result).length).toBe(2);
+        Object.values(result).forEach(session => {
+            expect(session.notes).toContain("Test notes");
         });
+    });
 
-        test("searches by lapTimes", async () => {
-            await triathlonData.createMember("user1", "Alex", "Apple"); // create member
-            await triathlonData.login("user1"); // login
-            const date = new Date().toLocaleDateString('en-NZ');
-            await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
-            await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [40, 42, 41], 27);
-            await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
-            await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [40, 42, 41], 27);
-            const result = await triathlonData.searchTrainingSessions("lapTimes", "30");
-            expect(Object.keys(result).length).toBe(2);
-            Object.values(result).forEach(session => {
-                expect(session.lapTimes.join(",")).toContain("30");
-            });
+    test("searches by lapTimes", async () => {
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+        const date = new Date().toLocaleDateString('en-NZ');
+        await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [40, 42, 41], 27);
+        await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [40, 42, 41], 27);
+        const result = await triathlonData.searchTrainingSessions("lapTimes", "30");
+        expect(Object.keys(result).length).toBe(2);
+        Object.values(result).forEach(session => {
+            expect(session.lapTimes.join(",")).toContain("30");
         });
+    });
 
-        test("searches by strokeType", async () => {
-            await triathlonData.createMember("user1", "Alex", "Apple"); // create member
-            await triathlonData.login("user1"); // login
-            const date = new Date().toLocaleDateString('en-NZ');
-            await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
-            await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Butterfly", [30, 32, 31], 27);
-            await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
-            await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Butterfly", [30, 32, 31], 27);
-            const result = await triathlonData.searchTrainingSessions("strokeType", "Freestyle");
-            expect(Object.keys(result).length).toBe(2);
-            Object.values(result).forEach(session => {
-                expect(session.strokeType).toBe("Freestyle");
-            });
+    test("searches by strokeType", async () => {
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+        const date = new Date().toLocaleDateString('en-NZ');
+        await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Butterfly", [30, 32, 31], 27);
+        await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
+        await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Butterfly", [30, 32, 31], 27);
+        const result = await triathlonData.searchTrainingSessions("strokeType", "Freestyle");
+        expect(Object.keys(result).length).toBe(2);
+        Object.values(result).forEach(session => {
+            expect(session.strokeType).toBe("Freestyle");
         });
+    });
 
-        test("searches by shoesUsed", async () => {
-            await triathlonData.createMember("user1", "Alex", "Apple"); // create member
-            await triathlonData.login("user1"); // login
-            const date = new Date().toLocaleDateString('en-NZ');
-            await triathlonData.CreateRunningSession(date, "Test notes", 10, 40, "Nike", 20, "Cloudy");
-            await triathlonData.CreateRunningSession(date, "Test notes", 10, 40, "Adidas", 20, "Cloudy");
-            await triathlonData.CreateRunningSession(date, "Test notes", 10, 40, "Nike", 20, "Cloudy");
-            await triathlonData.CreateRunningSession(date, "Test notes", 10, 40, "Adidas", 20, "Cloudy");
-            const result = await triathlonData.searchTrainingSessions("shoesUsed", "Nike");
-            expect(Object.keys(result).length).toBe(2);
-            Object.values(result).forEach(session => {
-                expect(session.shoesUsed).toBe("Nike");
-            });
+    test("searches by shoesUsed", async () => {
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+        const date = new Date().toLocaleDateString('en-NZ');
+        await triathlonData.CreateRunningSession(date, "Test notes", 10, 40, "Nike", 20, "Cloudy");
+        await triathlonData.CreateRunningSession(date, "Test notes", 10, 40, "Adidas", 20, "Cloudy");
+        await triathlonData.CreateRunningSession(date, "Test notes", 10, 40, "Nike", 20, "Cloudy");
+        await triathlonData.CreateRunningSession(date, "Test notes", 10, 40, "Adidas", 20, "Cloudy");
+        const result = await triathlonData.searchTrainingSessions("shoesUsed", "Nike");
+        expect(Object.keys(result).length).toBe(2);
+        Object.values(result).forEach(session => {
+            expect(session.shoesUsed).toBe("Nike");
         });
+    });
 
-        test("only returns training sessions from the logged-in user", async () => {
-            // Create a second user and log them in
-            await triathlonData.createMember("user1", "Alex", "Apple"); // create member
-            await triathlonData.createMember("user2", "Bob", "Builder"); // create member
-            triathlonData.logout();
-            await triathlonData.login("user2");
+    test("only returns training sessions from the logged-in user", async () => {
+        // Create a second user and log them in
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.createMember("user2", "Bob", "Builder"); // create member
+        triathlonData.logout();
+        await triathlonData.login("user2");
 
-            // Create a training session for the second user
-            const date = new Date().toLocaleDateString('en-NZ');
-            await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
+        // Create a training session for the second user
+        const date = new Date().toLocaleDateString('en-NZ');
+        await triathlonData.CreateSwimmingSession(date, "Test notes", 25, "Freestyle", [30, 32, 31], 27);
 
-            // Log back in as the first user
-            triathlonData.logout();
-            await triathlonData.login("user1");
+        // Log back in as the first user
+        triathlonData.logout();
+        await triathlonData.login("user1");
 
-            // Search for training sessions and ensure that only the first user's sessions are returned
-            const result = await triathlonData.searchTrainingSessions("sportType", "Swimming");
-            expect(Object.keys(result).length).toBe(0);
-        });
+        // Search for training sessions and ensure that only the first user's sessions are returned
+        const result = await triathlonData.searchTrainingSessions("sportType", "Swimming");
+        expect(Object.keys(result).length).toBe(0);
     });
 
     test("calculateTotalDistanceForDatePeriod calculates the total distance for a given date period", async () => {
@@ -580,9 +722,9 @@ describe("TriathlonData Class Tests", () => {
         await triathlonData.createMember("user1", "Alex", "Apple"); // create member
         await triathlonData.login("user1"); // login
 
-        const date1 = "2024-01-01";
-        const date2 = "2024-01-05";
-        const date3 = "2024-01-10";
+        const date1 = "1/1/2025";
+        const date2 = "5/1/2025";
+        const date3 = "10/1/2025";
 
         await triathlonData.CreateRunningSession(date1, "notes", 10, 40, "Nike", 20, "Cloudy");
         await triathlonData.CreateCyclingSession(date2, "notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny");
@@ -590,8 +732,8 @@ describe("TriathlonData Class Tests", () => {
         await triathlonData.CreateSwimmingSession(date1, "notes", 25, "Freestyle", [30, 32, 31], 27);
 
         const trainingSessions = await triathlonData.database.getAllData("TrainingSessions");
-        const startDate = "2024-01-01";
-        const endDate = "2024-01-05";
+        const startDate = "1/1/2025";
+        const endDate = "5/1/2025";
         const totalDistance = await triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate);
 
         expect(totalDistance).toBe(30.75);
@@ -602,9 +744,9 @@ describe("TriathlonData Class Tests", () => {
         await triathlonData.createMember("user1", "Alex", "Apple"); // create member
         await triathlonData.login("user1"); // login
 
-        const date1 = "2024-01-01";
-        const date2 = "2024-01-05";
-        const date3 = "2024-01-10";
+        const date1 = "1/1/2025";
+        const date2 = "5/1/2025";
+        const date3 = "10/1/2025";
 
         await triathlonData.CreateRunningSession(date1, "notes", 10, 40, "Nike", 20, "Cloudy");
         await triathlonData.CreateCyclingSession(date2, "notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny");
@@ -617,6 +759,46 @@ describe("TriathlonData Class Tests", () => {
         expect(totalDistance).toBe(35.75);
     });
 
+
+    test("calculateTotalDistanceForDatePeriod throws an error if startDate is invalid", async () => {
+        // Sets up member for test
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+
+        const date1 = "1/1/2025";
+        const date2 = "5/1/2025";
+        const date3 = "10/1/2025";
+
+        await triathlonData.CreateRunningSession(date1, "notes", 10, 40, "Nike", 20, "Cloudy");
+        await triathlonData.CreateCyclingSession(date2, "notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny");
+        await triathlonData.CreateRunningSession(date3, "notes", 5, 40, "Nike", 20, "Cloudy");
+        await triathlonData.CreateSwimmingSession(date1, "notes", 25, "Freestyle", [30, 32, 31], 27);
+
+        const trainingSessions = await triathlonData.database.getAllData("TrainingSessions");
+        const startDate = "ABC";
+        const endDate = "5/1/2025";
+        await expect(triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate)).rejects.toThrow("Invalid start date. Please use dd/MM/yyyy and ensure a valid date.");
+    });
+
+    test("calculateTotalDistanceForDatePeriod throws an error if endDate is invalid", async () => {
+        // Sets up member for test
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+
+        const date1 = "1/1/2025";
+        const date2 = "5/1/2025";
+        const date3 = "10/1/2025";
+
+        await triathlonData.CreateRunningSession(date1, "notes", 10, 40, "Nike", 20, "Cloudy");
+        await triathlonData.CreateCyclingSession(date2, "notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny");
+        await triathlonData.CreateRunningSession(date3, "notes", 5, 40, "Nike", 20, "Cloudy");
+        await triathlonData.CreateSwimmingSession(date1, "notes", 25, "Freestyle", [30, 32, 31], 27);
+
+        const trainingSessions = await triathlonData.database.getAllData("TrainingSessions");
+        const startDate = "1/1/2025";
+        const endDate = "ABC";
+        await expect(triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate)).rejects.toThrow("Invalid end date. Please use dd/MM/yyyy and ensure a valid date.");
+    });
 
     test("calculateAveragePace calculates the average pace of all training sessions", async () => {
         // Sets up member for test
@@ -652,7 +834,50 @@ describe("TriathlonData Class Tests", () => {
         expect(averagePace).toBe("No training sessions found with valid distance and duration.");
     });
 
-    test("createSwimmingSession adds a new swimming session to trainingSessions and adds data to the database", async () => {
+    test("initializeAndLoad initializes the database", async () => {
+        const triathlonData = new TriathlonData();
+        triathlonData.database.init = jest.fn();
+        await triathlonData.initializeAndLoad();
+        expect(triathlonData.database.init).toHaveBeenCalled();
+    });
+
+    test("sortTrainingSessionsByDate throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.sortTrainingSessionsByDate("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
+
+    test("sortTrainingSessionsByMemberID throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.sortTrainingSessionsByMemberID("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
+
+    test("sortTrainingSessionsBySportType throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.sortTrainingSessionsBySportType("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
+
+    test("sortTrainingSessionsByDistance throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.sortTrainingSessionsByDistance("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
+
+    test("calculateTotalDistanceForDatePeriod throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.calculateTotalDistanceForDatePeriod("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
+
+    test("calculateAveragePace throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.calculateAveragePace("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
+
+    test("findTrainingSessionByID throws an error if sessionID is not a non-empty string", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.findTrainingSessionByID(123)).rejects.toThrow("Session ID must be a non-empty string.");
+        await expect(triathlonData.findTrainingSessionByID("")).rejects.toThrow("Session ID must be a non-empty string.");
+    });
+
+    test("CreateSwimmingSession throws an error if database.addData fails", async () => {
         // Sets up member for test
         await triathlonData.createMember("user1", "Alex", "Apple"); // create member
         await triathlonData.login("user1"); // login
@@ -664,12 +889,45 @@ describe("TriathlonData Class Tests", () => {
         const lapTimes = [30, 32, 31];
         const waterTempiture = 27;
 
-        // Mock the addData method
-        triathlonData.database.addData = jest.fn();
+        triathlonData.database.addData = jest.fn().mockRejectedValue(new Error("Database error"));
 
-        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+        await expect(triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture)).rejects.toThrow("Database error");
+    });
 
-        expect(triathlonData.database.addData).toHaveBeenCalledWith("TrainingSessions", expect.any(Object));
-        expect(TriathlonData.trainingSessions).toContain(session);
+    test("CreateCyclingSession throws an error if database.addData fails", async () => {
+        // Sets up member for test
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const distance = 20;
+        const duration = 60;
+        const terrain = "Road";
+        const bikeUsed = "Mountain Bike";
+        const airTempiture = 25;
+        const weatherCondition = "Sunny";
+
+        triathlonData.database.addData = jest.fn().mockRejectedValue(new Error("Database error"));
+
+        await expect(triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTempiture, weatherCondition)).rejects.toThrow("Database error");
+    });
+
+    test("CreateRunningSession throws an error if database.addData fails", async () => {
+        // Sets up member for test
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const distance = 10;
+        const duration = 40;
+        const shoesUsed = "Nike";
+        const airTempiture = 20;
+        const weatherCondition = "Cloudy";
+
+        triathlonData.database.addData = jest.fn().mockRejectedValue(new Error("Database error"));
+
+        await expect(triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition)).rejects.toThrow("Database error");
     });
 });
