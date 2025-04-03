@@ -1,11 +1,14 @@
 import { TrainingSession, SportType } from "../js/trainingSession";
 import { TriathlonData } from "../js/triathlonData";
+import { Member } from "../js/member";
 
 describe("TrainingSession Class Tests", () => {
+    let member;
 
     // Helper function to clear before each test
     beforeEach(() => {
         TrainingSession.lastSessionID = 0; // Reset the session ID counter
+        member = new Member();
     });
 
     test("TrainingSession constructor initializes properties correctly when date is provided", () => {
@@ -48,12 +51,12 @@ describe("TrainingSession Class Tests", () => {
 
     test("getDetails returns the session details", async () => {
         const triathlonData = new TriathlonData();
-        await triathlonData.database.init();
-        const member = await triathlonData.createMember("user1", "Alex", "Apple");
-        await triathlonData.login("user1");
+        await TriathlonData.database.init();
+        const member1 = await member.createMember("user1", "Alex", "Apple");
+        await member.login("user1");
         const session = new TrainingSession("2024-01-01", "Test notes", SportType.SWIMMING);
         const details = session.getDetails();
-        expect(details).toBe(`Session ID:S0001, Member: ${member.memberID}, Date: 2024-01-01, Notes: Test notes, Sport Type: Swimming`);
-        triathlonData.logout();
+        expect(details).toBe(`Session ID:S0001, Member: ${member1.memberID}, Date: 2024-01-01, Notes: Test notes, Sport Type: Swimming`);
+        member.logout();
     });
 })

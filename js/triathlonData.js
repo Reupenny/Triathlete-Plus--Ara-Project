@@ -3,18 +3,16 @@ import { RunningSession } from "./runningSession";
 import { CyclingSession } from "./CyclingSession";
 import { History } from "./history";
 import { Database } from "./database";
-import { Member } from "./member";
 import { isValid, parse } from 'date-fns';
 
 export class TriathlonData {
-    lastMemberID = 0;
+    static database = new Database();
 
     constructor() {
         this.history = new History();
-        this.database = new Database();
     }
     async initializeAndLoad() {
-        await this.database.init();
+        await TriathlonData.database.init();
     }
 
     async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture) {
@@ -79,7 +77,7 @@ export class TriathlonData {
                 waterTempiture: newSession.waterTempiture,
                 distance: distance
             };
-            await this.database.addData("TrainingSessions", sessionData);
+            await TriathlonData.database.addData("TrainingSessions", sessionData);
             return newSession;
 
         } catch (error) {
@@ -155,7 +153,7 @@ export class TriathlonData {
                 airTempiture: newSession.airTempiture,
                 weatherCondition: newSession.weatherCondition
             };
-            await this.database.addData("TrainingSessions", sessionData);
+            await TriathlonData.database.addData("TrainingSessions", sessionData);
             return newSession;
         } catch (error) {
             throw new Error("Error creating cycling session.", error);
@@ -221,7 +219,7 @@ export class TriathlonData {
                 airTempiture: newSession.airTempiture,
                 weatherCondition: newSession.weatherCondition
             };
-            await this.database.addData("TrainingSessions", sessionData);
+            await TriathlonData.database.addData("TrainingSessions", sessionData);
             return newSession;
         } catch (error) {
             throw new Error("Error creating running session.", error);
@@ -345,7 +343,7 @@ export class TriathlonData {
         if (typeof sessionID !== 'string' || !sessionID) {
             throw new Error("Session ID must be a non-empty string.");
         }
-        return await this.database.getData("TrainingSessions", sessionID);
+        return await TriathlonData.database.getData("TrainingSessions", sessionID);
     }
 
 
@@ -356,7 +354,7 @@ export class TriathlonData {
             return { message: "Please log in to search for training sessions." };
         }
 
-        const trainingSessions = await this.database.getAllData("TrainingSessions");
+        const trainingSessions = await TriathlonData.database.getAllData("TrainingSessions");
         const results = {};
 
         trainingSessions.forEach(session => {
@@ -378,7 +376,7 @@ export class TriathlonData {
         if (sessionToDelete.memberID !== loggedInMemberID) {
             throw new Error("You are not authorized to delete this session");
         }
-        await this.database.deleteData("TrainingSessions", sessionID);
+        await TriathlonData.database.deleteData("TrainingSessions", sessionID);
         //Adds old session to history list
         this.history.addHistory(sessionToDelete);
     }
@@ -396,84 +394,9 @@ export class TriathlonData {
 
         // Update the session details
         Object.assign(sessionToEdit, updatedSession);
-        await this.database.updateData("TrainingSessions", sessionToEdit);
+        await TriathlonData.database.updateData("TrainingSessions", sessionToEdit);
         //Adds old session to history list
         this.history.addHistory(sessionToEdit);
         return sessionToEdit;
-    }
-
-    async createMember(userName, fName, lName) {
-        if (typeof userName !== 'string') {
-            throw new Error("Username must be a string");
-        }
-        if (typeof fName !== 'string') {
-            throw new Error("First name must be a string");
-        }
-        if (typeof lName !== 'string') {
-            throw new Error("Last name must be a string");
-        }
-        const allMembers = await this.database.getAllData("Members");
-        if (allMembers) {
-            const member = allMembers.find(m => m.userName === userName);
-            if (member) {
-                throw new Error("User already exists!");
-            }
-        }
-        // Generate the next memberID
-        const memberID = this.generateMemberID();
-        const newMember = new Member(memberID, userName, fName, lName);
-        const memberData = {
-            memberID: newMember.memberID,
-            userName: newMember.userName,
-            fName: newMember.fName,
-            lName: newMember.lName
-        };
-        await this.database.addData("Members", memberData);
-        return newMember;
-    }
-
-    async deleteMember(userName) {
-        let memberID;
-        const allMembers = await this.database.getAllData("Members");
-        if (allMembers) {
-            const member = allMembers.find(m => m.userName === userName);
-            if (member) {
-                memberID = member.memberID;
-            }
-        }
-        if (memberID) {
-            await this.database.deleteData("Members", memberID);
-            return true; // Member successfully deleted
-        } else {
-            return false; // Member not found
-        }
-    }
-
-    async login(userName) {
-        let memberID;
-        const allMembers = await this.database.getAllData("Members");
-        if (allMembers) {
-            const member = allMembers.find(m => m.userName === userName);
-            if (member) {
-                memberID = member.memberID;
-            }
-        }
-        if (memberID) {
-            const currentMember = await this.database.getData("Members", memberID);
-            if (currentMember) {
-                window.localStorage.setItem("currentUser", currentMember.memberID); // Sets the current member in local storage
-                return true; // Login successful
-            }
-        }
-        return false; // Login failed (user not found)
-    }
-
-    logout() {
-        window.localStorage.removeItem("currentUser");
-    }
-
-    generateMemberID() {
-        this.lastMemberID++; // Increment last used ID
-        return `M${String(this.lastMemberID).padStart(4, '0')}`;
     }
 }

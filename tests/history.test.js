@@ -1,25 +1,28 @@
 import { History } from "../js/history";
 import { TriathlonData } from "../js/triathlonData";
+import { Member } from "../js/member";
 
 describe("History Class Tests", () => {
     let history;
     let triathlonData;
+    let member;
 
     beforeEach(async () => {
         localStorage.clear();
         triathlonData = new TriathlonData();
-        await triathlonData.database.init();
+        await TriathlonData.database.init();
         history = new History();
         history.history = [];
 
         // Sets up member for test
-        const member1 = await triathlonData.createMember("user1", "Alex", "Apple"); // create member
-        await triathlonData.login("user1"); // login
+        member = new Member();
+        const member1 = await member.createMember("user1", "Alex", "Apple"); // create member
+        await member.login("user1"); // login
     });
 
     afterEach((done) => {
         TriathlonData.lastMemberID = 0; // Reset member ID counter
-        triathlonData.database.deleteDatabase().then(done);
+        TriathlonData.database.deleteDatabase().then(done);
     }, 5000);
 
     test("addHistory adds a training session to the history", async () => {

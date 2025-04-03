@@ -80,6 +80,13 @@ class TriathlonData {
     +findTrainingSessionByID(sessionID)
     +deleteTrainingSession(sessionID)
     +editTrainingSession(sessionID, updatedSession)
+    +sortTrainingSessionsByDate(trainingSessions)
+    +sortTrainingSessionsByMemberID(trainingSessions)
+    +sortTrainingSessionsBySportType(trainingSessions)
+    +sortTrainingSessionsByDistance(trainingSessions)
+    +calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate)
+    +calculateAveragePace(trainingSessions)
+    +searchTrainingSessions(searchType, searchQuery)
 }
 
 TriathlonData "1" -- "1" History : has >
