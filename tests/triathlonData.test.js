@@ -6,7 +6,6 @@ describe("TriathlonData Class Tests", () => {
     beforeEach(async () => {
         triathlonData = new TriathlonData();
         await triathlonData.database.init();
-        // TriathlonData.trainingSessions = [];
     });
 
     afterEach((done) => {
@@ -33,22 +32,16 @@ describe("TriathlonData Class Tests", () => {
     });
 
     test("login logs in an existing member", async () => {
-        const userName = "user1";
-        const fName = "Alex";
-        const lName = "Apple";
-        await triathlonData.createMember(userName, fName, lName);
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
 
-        const loginResult = await triathlonData.login(userName);
+        const loginResult = await triathlonData.login("user1");
         expect(loginResult).toBe(true);
         expect(window.localStorage.getItem("currentUser")).toBeDefined();
     });
 
     test("logout logs out the current member", async () => {
-        const userName = "user1";
-        const fName = "Alex";
-        const lName = "Apple";
-        await triathlonData.createMember(userName, fName, lName);
-        await triathlonData.login(userName);
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
 
         triathlonData.logout();
         expect(window.localStorage.getItem("currentUser")).toBeNull();
@@ -165,13 +158,80 @@ describe("TriathlonData Class Tests", () => {
         expect(session.weatherCondition).toBe(weatherCondition);
     });
 
-    test("createMember throws an error if user already exists", async () => {
-        const userName = "user1";
-        const fName = "Alex";
-        const lName = "Apple";
-        await triathlonData.createMember(userName, fName, lName);
+    test("CreateCyclingSession sets airTempiture to 'NA' when not provided", async () => {
+        // Sets up member for test
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
 
-        await expect(triathlonData.createMember(userName, fName, lName)).rejects.toThrow("User already exists!");
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const distance = 20;
+        const duration = 60;
+        const terrain = "Road";
+        const bikeUsed = "Mountain Bike";
+        const weatherCondition = "Sunny";
+
+        const session = await triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, undefined, weatherCondition);
+
+        expect(session.airTempiture).toBe("NA");
+    });
+
+    test("CreateCyclingSession sets weatherCondition to '' when not provided", async () => {
+        // Sets up member for test
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const distance = 20;
+        const duration = 60;
+        const terrain = "Road";
+        const bikeUsed = "Mountain Bike";
+        const airTempiture = 25;
+
+        const session = await triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTempiture, undefined);
+
+        expect(session.weatherCondition).toBe("");
+    });
+
+    test("CreateRunningSession sets airTempiture to 'NA' when not provided", async () => {
+        // Sets up member for test
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const distance = 10;
+        const duration = 40;
+        const shoesUsed = "Nike";
+        const weatherCondition = "Cloudy";
+
+        const session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, undefined, weatherCondition);
+
+        expect(session.airTempiture).toBe("NA");
+    });
+
+    test("CreateRunningSession sets weatherCondition to '' when not provided", async () => {
+        // Sets up member for test
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+        await triathlonData.login("user1"); // login
+
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const distance = 10;
+        const duration = 40;
+        const shoesUsed = "Nike";
+        const airTempiture = 20;
+
+        const session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, undefined);
+
+        expect(session.weatherCondition).toBe("");
+    });
+
+    test("createMember throws an error if user already exists", async () => {
+        await triathlonData.createMember("user1", "Alex", "Apple"); // create member
+
+        await expect(triathlonData.createMember("user1", "Alex", "Apple")).rejects.toThrow("User already exists!");
     });
 
     test("createMember throws an error if userName is not a string", async () => {
@@ -439,9 +499,6 @@ describe("TriathlonData Class Tests", () => {
         });
     });
 
-    test("throws an error if notes is not a string", async () => {
-        await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), 123, 25, "Freestyle", [30, 32, 31], 27)).rejects.toThrow("Notes must be a string.");
-    });
 
     test("throws an error if lapLength is not a number", async () => {
         await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", "25", "Freestyle", [30, 32, 31], 27)).rejects.toThrow("Lap Length must be a number");
@@ -468,8 +525,8 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, "Freestyle", [30, 32, 31], 41)).rejects.toThrow("Water temperature must be between 0 and 40 degrees Celsius.");
     });
 
-    test("throws an error if date is not in the correct format (dd/MM/yyyy)", async () => {
-        await expect(triathlonData.CreateSwimmingSession("2025-01-01", "Test notes", 25, "Freestyle", [30, 32, 31], 27)).rejects.toThrow("Invalid date. Please use dd/MM/yyyy and ensure a valid date.");
+    test("throws an error if date is not in the correct format (d/M/yyyy)", async () => {
+        await expect(triathlonData.CreateSwimmingSession("2025-01-01", "Test notes", 25, "Freestyle", [30, 32, 31], 27)).rejects.toThrow("Invalid date. Please use d/M/yyyy and ensure a valid date.");
     });
 
     test("throws an error if lapTimes is not an array", async () => {
@@ -487,9 +544,6 @@ describe("TriathlonData Class Tests", () => {
     });
 
 
-    test("throws an error if notes is not a string", async () => {
-        await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), 123, 20, 60, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Notes must be a string.");
-    });
 
     test("throws an error if distance is not a number", async () => {
         await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", "20", 60, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Distance must be a number.");
@@ -536,8 +590,8 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, "Road", "Mountain Bike", 51, "Sunny")).rejects.toThrow("Air temperature must be between -20 and 50 degrees Celsius.");
     });
 
-    test("throws an error if date is not in the correct format (dd/MM/yyyy)", async () => {
-        await expect(triathlonData.CreateCyclingSession("2025-01-01", "Test notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Invalid date. Please use dd/MM/yyyy and ensure a valid date.");
+    test("throws an error if date is not in the correct format (d/M/yyyy)", async () => {
+        await expect(triathlonData.CreateCyclingSession("2025-01-01", "Test notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Invalid date. Please use d/M/yyyy and ensure a valid date.");
     });
 
     test("handles missing date and uses the current date in 'en-NZ' format", async () => {
@@ -546,9 +600,6 @@ describe("TriathlonData Class Tests", () => {
     });
 
 
-    test("throws an error if notes is not a string", async () => {
-        await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), 123, 10, 40, "Nike", 20, "Cloudy")).rejects.toThrow("Notes must be a string.");
-    });
 
     test("throws an error if distance is not a number", async () => {
         await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", "10", 40, "Nike", 20, "Cloudy")).rejects.toThrow("Distance must be a number.");
@@ -587,8 +638,8 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 40, "Nike", 51, "Cloudy")).rejects.toThrow("Air temperature must be between -20 and 50 degrees Celsius.");
     });
 
-    test("throws an error if date is not in the correct format (dd/MM/yyyy)", async () => {
-        await expect(triathlonData.CreateRunningSession("2025-01-01", "Test notes", 10, 40, "Nike", 20, "Cloudy")).rejects.toThrow("Invalid date. Please use dd/MM/yyyy and ensure a valid date.");
+    test("throws an error if date is not in the correct format (d/M/yyyy)", async () => {
+        await expect(triathlonData.CreateRunningSession("2025-01-01", "Test notes", 10, 40, "Nike", 20, "Cloudy")).rejects.toThrow("Invalid date. Please use d/M/yyyy and ensure a valid date.");
     });
 
     test("handles missing date and uses the current date in 'en-NZ' format", async () => {
@@ -777,7 +828,7 @@ describe("TriathlonData Class Tests", () => {
         const trainingSessions = await triathlonData.database.getAllData("TrainingSessions");
         const startDate = "ABC";
         const endDate = "5/1/2025";
-        await expect(triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate)).rejects.toThrow("Invalid start date. Please use dd/MM/yyyy and ensure a valid date.");
+        await expect(triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate)).rejects.toThrow("Invalid start date. Please use d/M/yyyy and ensure a valid date.");
     });
 
     test("calculateTotalDistanceForDatePeriod throws an error if endDate is invalid", async () => {
@@ -797,7 +848,7 @@ describe("TriathlonData Class Tests", () => {
         const trainingSessions = await triathlonData.database.getAllData("TrainingSessions");
         const startDate = "1/1/2025";
         const endDate = "ABC";
-        await expect(triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate)).rejects.toThrow("Invalid end date. Please use dd/MM/yyyy and ensure a valid date.");
+        await expect(triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate)).rejects.toThrow("Invalid end date. Please use d/M/yyyy and ensure a valid date.");
     });
 
     test("calculateAveragePace calculates the average pace of all training sessions", async () => {
@@ -891,7 +942,7 @@ describe("TriathlonData Class Tests", () => {
 
         triathlonData.database.addData = jest.fn().mockRejectedValue(new Error("Database error"));
 
-        await expect(triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture)).rejects.toThrow("Database error");
+        await expect(triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture)).rejects.toThrow("Error creating swimming session.");
     });
 
     test("CreateCyclingSession throws an error if database.addData fails", async () => {
@@ -910,7 +961,7 @@ describe("TriathlonData Class Tests", () => {
 
         triathlonData.database.addData = jest.fn().mockRejectedValue(new Error("Database error"));
 
-        await expect(triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTempiture, weatherCondition)).rejects.toThrow("Database error");
+        await expect(triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTempiture, weatherCondition)).rejects.toThrow("Error creating cycling session.");
     });
 
     test("CreateRunningSession throws an error if database.addData fails", async () => {
@@ -923,11 +974,11 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTempiture = 25;
         const weatherCondition = "Cloudy";
 
         triathlonData.database.addData = jest.fn().mockRejectedValue(new Error("Database error"));
 
-        await expect(triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition)).rejects.toThrow("Database error");
+        await expect(triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition)).rejects.toThrow("Error creating running session.");
     });
 });

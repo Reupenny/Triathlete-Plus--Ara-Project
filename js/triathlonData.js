@@ -23,9 +23,6 @@ export class TriathlonData {
             date = new Date().toLocaleDateString('en-NZ');
         }
         // Type Checks and Existence Checks
-        if (notes && typeof notes !== 'string') {
-            throw new Error("Notes must be a string.");
-        }
         if (typeof lapLength !== 'number') {
             throw new Error("Lap Length must be a number");
         }
@@ -50,7 +47,7 @@ export class TriathlonData {
         // Format Validation Date
         const parsedDate = parse(date, 'd/M/yyyy', new Date());
         if (!isValid(parsedDate)) {
-            throw new Error(`Invalid date. Please use dd/MM/yyyy and ensure a valid date.`);
+            throw new Error(`Invalid date. Please use d/M/yyyy and ensure a valid date.`);
         }
 
         // Array Validation
@@ -86,8 +83,7 @@ export class TriathlonData {
             return newSession;
 
         } catch (error) {
-            console.error("Error creating swimming session:", error);
-            throw error;
+            throw new Error("Error creating swimming session.", error);
         }
     }
 
@@ -97,9 +93,6 @@ export class TriathlonData {
             date = new Date().toLocaleDateString('en-NZ');
         }
         // Type Checks and Existence Checks
-        if (notes && typeof notes !== 'string') {
-            throw new Error("Notes must be a string.");
-        }
         if (typeof distance !== 'number') {
             throw new Error("Distance must be a number.");
         }
@@ -108,9 +101,6 @@ export class TriathlonData {
         }
         if (duration <= 0) {
             throw new Error("Duration must be greater than zero.");
-        }
-        if (typeof airTempiture !== 'number') {
-            throw new Error("Air temperature must be a number.");
         }
         if (!terain) {
             throw new Error("Terrain is required.");
@@ -124,6 +114,9 @@ export class TriathlonData {
         if (typeof bikeUsed !== 'string') {
             throw new Error("Bike Used must be a string.");
         }
+        if (!weatherCondition) {
+            weatherCondition = "";
+        }
         if (weatherCondition && typeof weatherCondition !== 'string') {
             throw new Error("Weather Condition must be a string.");
         }
@@ -131,14 +124,20 @@ export class TriathlonData {
         if (distance <= 0) {
             throw new Error("Distance must be greater than zero.");
         }
-        if (airTempiture < -20 || airTempiture > 50) {
+        if (!airTempiture) {
+            airTempiture = "NA"
+        }
+        if (typeof airTempiture !== 'number' && airTempiture !== "NA") {
+            throw new Error("Air temperature must be a number.");
+        }
+        if (airTempiture !== "NA" && (airTempiture < -20 || airTempiture > 50)) {
             throw new Error("Air temperature must be between -20 and 50 degrees Celsius.");
         }
 
         // Format Validation Date
         const parsedDate = parse(date, 'd/M/yyyy', new Date());
         if (!isValid(parsedDate)) {
-            throw new Error(`Invalid date. Please use dd/MM/yyyy and ensure a valid date.`);
+            throw new Error(`Invalid date. Please use d/M/yyyy and ensure a valid date.`);
         }
 
         try {
@@ -159,8 +158,7 @@ export class TriathlonData {
             await this.database.addData("TrainingSessions", sessionData);
             return newSession;
         } catch (error) {
-            console.error("Error creating cycling session:", error);
-            throw error;
+            throw new Error("Error creating cycling session.", error);
         }
     }
     async CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition) {
@@ -169,9 +167,6 @@ export class TriathlonData {
             date = new Date().toLocaleDateString('en-NZ');
         }
         // Type Checks and Existence Checks
-        if (notes && typeof notes !== 'string') {
-            throw new Error("Notes must be a string.");
-        }
         if (typeof distance !== 'number') {
             throw new Error("Distance must be a number.");
         }
@@ -181,14 +176,14 @@ export class TriathlonData {
         if (duration <= 0) {
             throw new Error("Duration must be greater than zero.");
         }
-        if (typeof airTempiture !== 'number') {
-            throw new Error("Air temperature must be a number.");
-        }
         if (!shoesUsed) {
             throw new Error("Shoes Used is required.");
         }
         if (typeof shoesUsed !== 'string') {
             throw new Error("Shoes Used must be a string.");
+        }
+        if (!weatherCondition) {
+            weatherCondition = "";
         }
         if (weatherCondition && typeof weatherCondition !== 'string') {
             throw new Error("Weather Condition must be a string.");
@@ -197,14 +192,20 @@ export class TriathlonData {
         if (distance <= 0) {
             throw new Error("Distance must be greater than zero.");
         }
-        if (airTempiture < -20 || airTempiture > 50) {
+        if (!airTempiture) {
+            airTempiture = "NA"
+        }
+        if (typeof airTempiture !== 'number' && airTempiture !== "NA") {
+            throw new Error("Air temperature must be a number.");
+        }
+        if (airTempiture !== "NA" && (airTempiture < -20 || airTempiture > 50)) {
             throw new Error("Air temperature must be between -20 and 50 degrees Celsius.");
         }
 
         // Format Validation Date
         const parsedDate = parse(date, 'd/M/yyyy', new Date());
         if (!isValid(parsedDate)) {
-            throw new Error(`Invalid date. Please use dd/MM/yyyy and ensure a valid date.`);
+            throw new Error(`Invalid date. Please use d/M/yyyy and ensure a valid date.`);
         }
         try {
             const newSession = new RunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
@@ -223,8 +224,7 @@ export class TriathlonData {
             await this.database.addData("TrainingSessions", sessionData);
             return newSession;
         } catch (error) {
-            console.error("Error creating running session:", error);
-            throw error;
+            throw new Error("Error creating running session.", error);
         }
     }
 
@@ -276,14 +276,14 @@ export class TriathlonData {
         if (startDate) {
             const parsedStartDate = parse(startDate, 'd/M/yyyy', new Date());
             if (!isValid(parsedStartDate)) {
-                throw new Error(`Invalid start date. Please use dd/MM/yyyy and ensure a valid date.`);
+                throw new Error(`Invalid start date. Please use d/M/yyyy and ensure a valid date.`);
             }
         }
 
         if (endDate) {
             const parsedEndDate = parse(endDate, 'd/M/yyyy', new Date());
             if (!isValid(parsedEndDate)) {
-                throw new Error(`Invalid end date. Please use dd/MM/yyyy and ensure a valid date.`);
+                throw new Error(`Invalid end date. Please use d/M/yyyy and ensure a valid date.`);
             }
         }
 
