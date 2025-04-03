@@ -879,13 +879,11 @@ describe("TriathlonData Class Tests", () => {
 });
 
 describe("TriathlonData Class Tests - database.addData failure", () => {
-    let member;
     let triathlonData;
 
     beforeEach(async () => {
         triathlonData = new TriathlonData()
         await TriathlonData.database.init();
-        member = new Member("M0000", "testuser", "Test", "User"); // Dummy memberID
     });
 
     afterEach((done) => {
