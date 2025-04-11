@@ -11,12 +11,12 @@ export class TriathlonData {
     constructor() {
         this.history = new History();
     }
-    async initializeAndLoad() {
+    async initialiseAndLoad() {
         await TriathlonData.database.init();
     }
 
     async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture) {
-        // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
+        // Handle missing date:  If no date is provided, use the current date
         if (!date) {
             date = new Date().toLocaleDateString('en-NZ');
         }
@@ -348,6 +348,7 @@ export class TriathlonData {
 
 
     async searchTrainingSessions(searchType, searchQuery) {
+        // searchType selects the row of data to search for the searchQuery in 
         const loggedInMemberID = window.localStorage.getItem("currentUser");
 
         if (!loggedInMemberID) {
@@ -374,7 +375,7 @@ export class TriathlonData {
             throw new Error("Session not found");
         }
         if (sessionToDelete.memberID !== loggedInMemberID) {
-            throw new Error("You are not authorized to delete this session");
+            throw new Error("You are not authorised to delete this session");
         }
         await TriathlonData.database.deleteData("TrainingSessions", sessionID);
         //Adds old session to history list
@@ -389,7 +390,7 @@ export class TriathlonData {
             throw new Error("Session not found");
         }
         if (sessionToEdit.memberID !== loggedInMemberID) {
-            throw new Error("You are not authorized to edit this session");
+            throw new Error("You are not authorised to edit this session");
         }
 
         // Update the session details

@@ -52,7 +52,7 @@ describe("SwimmingSession Class Tests", () => {
         TrainingSession.lastSessionID = 0; // Reset the session ID counter
     })
 
-    test("SwimmingSession constructor initializes properties correctly", async () => {
+    test("SwimmingSession constructor initialises properties correctly", async () => {
         const date = "30/03/2024";
         const notes = "Test notes";
         const lapLength = 25;

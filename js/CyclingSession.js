@@ -8,7 +8,7 @@ export class CyclingSession extends TrainingSession {
         this.duration = duration;
         this.terrain = terrain; // road, mountain
         this.bikeUsed = bikeUsed;
-        this.airTempiture = airTempiture;// celcius
+        this.airTempiture = airTempiture;// Celcius
         this.weatherCondition = weatherCondition; // sunny ,clouddy, windy etc
     }
     getDetails() {

@@ -7,7 +7,7 @@ describe("Member Class Tests", () => {
 
     beforeEach(async () => {
         triathlonData = new TriathlonData();
-        await triathlonData.initializeAndLoad();
+        await triathlonData.initialiseAndLoad();
         member = new Member("M0000", "testuser", "Test", "User"); // Dummy memberID
 
     });
@@ -16,7 +16,7 @@ describe("Member Class Tests", () => {
         TriathlonData.database.deleteDatabase().then(done);
     }, 5000);
 
-    test("Member constructor initializes properties correctly", () => {
+    test("Member constructor initialises properties correctly", () => {
         const memberID = "M0001";
         const userName = "user1";
         const fName = "Alex";

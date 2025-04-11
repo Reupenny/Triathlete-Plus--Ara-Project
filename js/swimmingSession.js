@@ -7,17 +7,19 @@ export class SwimmingSession extends TrainingSession {
         this.strokeType = strokeType;
         this.laps = lapTimes.length;
         this.lapTimes = lapTimes;
-        this.waterTempiture = waterTempiture;// celcius
+        this.waterTempiture = waterTempiture;// Celcius
     }
     getDetails() {
         return `${super.getDetails()}, Lap Length: ${this.lapLength}, Stroke: ${this.strokeType}, Laps: ${this.laps}, Water Temp: ${this.waterTempiture}`;
     }
 
     getTotalDistance() {
+        // Calculates the total length of swimming in Km
         return (this.lapLength * this.laps) / 100;
     }
 
     getTotalDuration() {
+        // Calculates total time swimming 
         return this.lapTimes.reduce((sum, time) => sum + time, 0);
     }
 }

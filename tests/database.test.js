@@ -15,19 +15,19 @@ describe("Database", () => {
         database.deleteDatabase().then(done)
     })
 
-    test("Should initialize IndexedDB", async () => {
+    test("Should initialise IndexedDB", async () => {
         await database.init()
         expect(database.db).not.toBeNull()
     })
 
-    test("Should handle error when initializing IndexedDB", async () => {
+    test("Should handle error when initialising IndexedDB", async () => {
         await database.init(10)
         database.close()
         let aPromise = database.init()
         await expect(aPromise).rejects.toThrow("Failed to open database")
     })
 
-    test("Alternative approach: Should handle error when initializing IndexedDB", () => {
+    test("Alternative approach: Should handle error when initialising IndexedDB", () => {
         // Save the original method
         const originalOpen = window.indexedDB.open
 
@@ -110,7 +110,7 @@ describe("Database", () => {
     })
 
     test("Should not create object store when it already exists", async () => {
-        // Initialize the database and create the object store
+        // Initialise the database and create the object store
         await database.init()
 
         // Close the database
@@ -124,7 +124,7 @@ describe("Database", () => {
             throw new Error("createObjectStore should not be called")
         })
 
-        // Try to initialize the database again
+        // Try to initialise the database again
         let aPromise = database.init(10)
         await expect(aPromise).resolves.toBeUndefined()
 

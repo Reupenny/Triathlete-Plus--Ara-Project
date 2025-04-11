@@ -92,22 +92,4 @@ describe("History Class Tests", () => {
         history.saveHistory();
         expect(localStorage.getItem("history")).toBe(JSON.stringify([session]));
     });
-
-    test("loadHistory loads the history from localStorage", async () => {
-        const date = new Date().toLocaleDateString('en-NZ');
-        const notes = "Test notes";
-        const lapLength = 25;
-        const strokeType = "Freestyle";
-        const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
-
-        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
-        history.addHistory(session);
-        history.saveHistory();
-
-        const newHistory = new History();
-        newHistory.loadHistory();
-        expect(await newHistory.getHistory()).toEqual([session]);
-    });
-
 });

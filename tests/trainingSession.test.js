@@ -11,7 +11,7 @@ describe("TrainingSession Class Tests", () => {
         member = new Member();
     });
 
-    test("TrainingSession constructor initializes properties correctly when date is provided", () => {
+    test("TrainingSession constructor initialises properties correctly when date is provided", () => {
         const date = new Date().toLocaleDateString('en-NZ');
         const notes = "Test notes";
         const sportType = SportType.SWIMMING;
@@ -21,17 +21,6 @@ describe("TrainingSession Class Tests", () => {
         expect(session.notes).toBe(notes);
         expect(session.sportType).toBe(sportType);
     });
-
-    // test("TrainingSession constructor initializes properties correctly when date is not provided", () => {
-    //     const notes = "Test notes";
-    //     const sportType = SportType.SWIMMING;
-    //     const session = new TrainingSession('', notes, sportType);
-
-    //     const expectedDate = new Date().toLocaleDateString('en-NZ');
-    //     expect(session.date).toBe(expectedDate);
-    //     expect(session.notes).toBe(notes);
-    //     expect(session.sportType).toBe(sportType);
-    // });
 
     test("generateSessionID generates a unique sessionID", () => {
         const session1 = new TrainingSession(new Date(), "Notes 1", SportType.SWIMMING);

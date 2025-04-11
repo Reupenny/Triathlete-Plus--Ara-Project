@@ -266,7 +266,7 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.editTrainingSession("nonexistent-session-id", {})).rejects.toThrow("Session not found");
     });
 
-    test("editTrainingSession throws an error if user is not authorized to edit the session", async () => {
+    test("editTrainingSession throws an error if user is not authorised to edit the session", async () => {
         // Sets up member for test
         await member.createMember("user1", "Alex", "Apple"); // create member
         await member.login("user1"); // login
@@ -285,7 +285,7 @@ describe("TriathlonData Class Tests", () => {
         await member.createMember("user2", "Bob", "Builder"); // create member
         await member.login("user2"); // login
 
-        await expect(triathlonData.editTrainingSession(session.sessionID, {})).rejects.toThrow("You are not authorized to edit this session");
+        await expect(triathlonData.editTrainingSession(session.sessionID, {})).rejects.toThrow("You are not authorised to edit this session");
     });
 
     test("deleteTrainingSession throws an error if session is not found", async () => {
@@ -296,7 +296,7 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.deleteTrainingSession("nonexistent-session-id")).rejects.toThrow("Session not found");
     });
 
-    test("deleteTrainingSession throws an error if user is not authorized to delete the session", async () => {
+    test("deleteTrainingSession throws an error if user is not authorised to delete the session", async () => {
         // Sets up member for test
         await member.createMember("user1", "Alex", "Apple"); // create member
         await member.login("user1"); // login
@@ -315,7 +315,7 @@ describe("TriathlonData Class Tests", () => {
         await member.createMember("user2", "Bob", "Builder"); // create member
         await member.login("user2"); // login
 
-        await expect(triathlonData.deleteTrainingSession(session.sessionID)).rejects.toThrow("You are not authorized to delete this session");
+        await expect(triathlonData.deleteTrainingSession(session.sessionID)).rejects.toThrow("You are not authorised to delete this session");
     });
 
     test("sortTrainingSessionsByDate sorts training sessions by date", async () => {
@@ -833,10 +833,10 @@ describe("TriathlonData Class Tests", () => {
         expect(averagePace).toBe("No training sessions found with valid distance and duration.");
     });
 
-    test("initializeAndLoad initializes the database", async () => {
+    test("initialiseAndLoad initialises the database", async () => {
         const triathlonData = new TriathlonData();
         TriathlonData.database.init = jest.fn();
-        await triathlonData.initializeAndLoad();
+        await triathlonData.initialiseAndLoad();
         expect(TriathlonData.database.init).toHaveBeenCalled();
     });
 

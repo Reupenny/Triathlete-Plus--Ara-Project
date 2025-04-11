@@ -1,14 +1,14 @@
 export class History {
     constructor() {
         this.history = [];
-        this.loadHistory();
     }
 
     addHistory(trainingSession) {
         const trainingSessionCopy = JSON.parse(JSON.stringify(trainingSession));
         this.history.push(trainingSessionCopy);
+        // removes the oldest entry in history if there are more than 5 entries
         if (this.history.length > 5) {
-            this.history.shift(); // Remove the oldest entry
+            this.history.shift();
         }
         this.saveHistory();
     }
@@ -18,13 +18,6 @@ export class History {
     }
 
     saveHistory() {
-        localStorage.setItem('history', JSON.stringify(this.history));
-    }
-
-    loadHistory() {
-        const historyData = localStorage.getItem('history');
-        if (historyData) {
-            this.history = JSON.parse(historyData);
-        }
+        window.localStorage.setItem('history', JSON.stringify(this.history));
     }
 }

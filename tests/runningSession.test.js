@@ -52,7 +52,7 @@ describe("RunningSession Class Tests", () => {
         TrainingSession.lastSessionID = 0; // Reset the session ID counter
     })
 
-    test("RunningSession constructor initializes properties correctly", async () => {
+    test("RunningSession constructor initialises properties correctly", async () => {
         const date = "30/03/2024";
         const notes = "Test notes";
         const distance = 10;
