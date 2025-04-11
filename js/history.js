@@ -1,6 +1,7 @@
 export class History {
     constructor() {
         this.history = [];
+        this.loadHistory();
     }
 
     addHistory(trainingSession) {
@@ -48,5 +49,11 @@ export class History {
             return true; // Indicate successful removal
         }
         return false; // Indicate session not found or not removed
+    }
+    loadHistory() {
+        const historyData = localStorage.getItem('history');
+        if (historyData) {
+            this.history = JSON.parse(historyData);
+        }
     }
 }
