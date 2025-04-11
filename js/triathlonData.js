@@ -41,13 +41,11 @@ export class TriathlonData {
         if (waterTempiture < 0 || waterTempiture > 40) {
             throw new Error("Water temperature must be between 0 and 40 degrees Celsius.");
         }
-
         // Format Validation Date
         const parsedDate = parse(date, 'd/M/yyyy', new Date());
         if (!isValid(parsedDate)) {
             throw new Error(`Invalid date. Please use d/M/yyyy and ensure a valid date.`);
         }
-
         // Array Validation
         if (!Array.isArray(lapTimes)) {
             throw new Error("Lap times must be an array.");
@@ -60,7 +58,6 @@ export class TriathlonData {
                 }
             }
         }
-
         try {
             const newSession = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
             const distance = newSession.getTotalDistance();
@@ -225,7 +222,6 @@ export class TriathlonData {
             throw new Error("Error creating running session.", error);
         }
     }
-
 
     async sortTrainingSessionsByDate(trainingSessions) {
         if (!Array.isArray(trainingSessions)) {

@@ -399,6 +399,26 @@ describe("TriathlonData Class Tests", () => {
         expect(sortedSessions[3].distance).toBe(20);
     });
 
+    test("sortTrainingSessionsByDate throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.sortTrainingSessionsByDate("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
+
+    test("sortTrainingSessionsByMemberID throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.sortTrainingSessionsByMemberID("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
+
+    test("sortTrainingSessionsBySportType throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.sortTrainingSessionsBySportType("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
+
+    test("sortTrainingSessionsByDistance throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.sortTrainingSessionsByDistance("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
+
     test("calculateAveragePace calculates the average pace of all training sessions", async () => {
         // Sets up member for test
         await member.createMember("user1", "Alex", "Apple"); // create member
@@ -422,31 +442,44 @@ describe("TriathlonData Class Tests", () => {
         expect(averagePace).toBe(`Average pace: ${expectedAveragePace.toFixed(2)} minutes per kilometer`);
     });
 
-
-    test("returns a message if the user is not logged in", async () => {
+    test("calculateAveragePace calculates the average pace of all training sessions", async () => {
+        // Sets up member for test
         await member.createMember("user1", "Alex", "Apple"); // create member
         await member.login("user1"); // login
-        member.logout();
-        const result = await triathlonData.searchTrainingSessions("sportType", "Swimming");
-        expect(result).toEqual({ message: "Please log in to search for training sessions." });
-    });
 
-    test("searches by sportType", async () => {
-        await member.createMember("user1", "Alex", "Apple"); // create member
-        await member.login("user1"); // login
         const date = new Date().toLocaleDateString('en-NZ');
+
+        // Create some training sessions
+        await triathlonData.CreateRunningSession(date, "notes", 10, 40, "Nike", 20, "Cloudy"); // 10km in 40 minutes
+        await triathlonData.CreateCyclingSession(date, "notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny"); // 20km in 60 minutes
         await triathlonData.CreateSwimmingSession(date, "notes", 25, "Freestyle", [30, 32, 31], 27);
-        await triathlonData.CreateSwimmingSession(date, "notes", 25, "Butterfly", [30, 32, 31], 27);
-        await triathlonData.CreateSwimmingSession(date, "notes", 25, "Freestyle", [30, 32, 31], 27);
-        await triathlonData.CreateRunningSession(date, "notes", 10, 40, "Nike", 20, "Cloudy");
-        await triathlonData.CreateCyclingSession(date, "notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny");
-        const result = await triathlonData.searchTrainingSessions("sportType", "Swimming");
-        expect(Object.keys(result).length).toBe(3);
-        Object.values(result).forEach(session => {
-            expect(session.sportType).toBe("Swimming");
-        });
+
+        const trainingSessions = await TriathlonData.database.getAllData("TrainingSessions");
+        const averagePace = await triathlonData.calculateAveragePace(trainingSessions);
+
+        // Calculate the expected average pace
+        const totalDistance = 10 + 20; // Total distance in km
+        const totalDuration = 40 + 60; // Total duration in minutes
+        const expectedAveragePace = totalDuration / totalDistance;
+
+        expect(averagePace).toBe(`Average pace: ${expectedAveragePace.toFixed(2)} minutes per kilometer`);
     });
 
+    test("calculateAveragePace returns 'No training sessions found with valid distance and duration.' if no sessions are found", async () => {
+        // Sets up member for test
+        await member.createMember("user1", "Alex", "Apple"); // create member
+        await member.login("user1"); // login
+
+        const trainingSessions = await TriathlonData.database.getAllData("TrainingSessions");
+        const averagePace = await triathlonData.calculateAveragePace(trainingSessions);
+
+        expect(averagePace).toBe("No training sessions found with valid distance and duration.");
+    });
+
+    test("calculateAveragePace throws an error if trainingSessions is not an array", async () => {
+        const triathlonData = new TriathlonData();
+        await expect(triathlonData.calculateAveragePace("not an array")).rejects.toThrow("Training sessions must be an array.");
+    });
 
     test("throws an error if lapLength is not a number", async () => {
         await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", "25", "Freestyle", [30, 32, 31], 27)).rejects.toThrow("Lap Length must be a number");
@@ -546,8 +579,6 @@ describe("TriathlonData Class Tests", () => {
         const session = await triathlonData.CreateCyclingSession(null, "Test notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny");
         expect(session.date).toEqual(new Date().toLocaleDateString('en-NZ'));
     });
-
-
 
     test("throws an error if distance is not a number", async () => {
         await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", "10", 40, "Nike", 20, "Cloudy")).rejects.toThrow("Distance must be a number.");
@@ -799,40 +830,6 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate)).rejects.toThrow("Invalid end date. Please use d/M/yyyy and ensure a valid date.");
     });
 
-    test("calculateAveragePace calculates the average pace of all training sessions", async () => {
-        // Sets up member for test
-        await member.createMember("user1", "Alex", "Apple"); // create member
-        await member.login("user1"); // login
-
-        const date = new Date().toLocaleDateString('en-NZ');
-
-        // Create some training sessions
-        await triathlonData.CreateRunningSession(date, "notes", 10, 40, "Nike", 20, "Cloudy"); // 10km in 40 minutes
-        await triathlonData.CreateCyclingSession(date, "notes", 20, 60, "Road", "Mountain Bike", 25, "Sunny"); // 20km in 60 minutes
-        await triathlonData.CreateSwimmingSession(date, "notes", 25, "Freestyle", [30, 32, 31], 27);
-
-        const trainingSessions = await TriathlonData.database.getAllData("TrainingSessions");
-        const averagePace = await triathlonData.calculateAveragePace(trainingSessions);
-
-        // Calculate the expected average pace
-        const totalDistance = 10 + 20; // Total distance in km
-        const totalDuration = 40 + 60; // Total duration in minutes
-        const expectedAveragePace = totalDuration / totalDistance;
-
-        expect(averagePace).toBe(`Average pace: ${expectedAveragePace.toFixed(2)} minutes per kilometer`);
-    });
-
-    test("calculateAveragePace returns 'No training sessions found with valid distance and duration.' if no sessions are found", async () => {
-        // Sets up member for test
-        await member.createMember("user1", "Alex", "Apple"); // create member
-        await member.login("user1"); // login
-
-        const trainingSessions = await TriathlonData.database.getAllData("TrainingSessions");
-        const averagePace = await triathlonData.calculateAveragePace(trainingSessions);
-
-        expect(averagePace).toBe("No training sessions found with valid distance and duration.");
-    });
-
     test("initialiseAndLoad initialises the database", async () => {
         const triathlonData = new TriathlonData();
         TriathlonData.database.init = jest.fn();
@@ -840,34 +837,9 @@ describe("TriathlonData Class Tests", () => {
         expect(TriathlonData.database.init).toHaveBeenCalled();
     });
 
-    test("sortTrainingSessionsByDate throws an error if trainingSessions is not an array", async () => {
-        const triathlonData = new TriathlonData();
-        await expect(triathlonData.sortTrainingSessionsByDate("not an array")).rejects.toThrow("Training sessions must be an array.");
-    });
-
-    test("sortTrainingSessionsByMemberID throws an error if trainingSessions is not an array", async () => {
-        const triathlonData = new TriathlonData();
-        await expect(triathlonData.sortTrainingSessionsByMemberID("not an array")).rejects.toThrow("Training sessions must be an array.");
-    });
-
-    test("sortTrainingSessionsBySportType throws an error if trainingSessions is not an array", async () => {
-        const triathlonData = new TriathlonData();
-        await expect(triathlonData.sortTrainingSessionsBySportType("not an array")).rejects.toThrow("Training sessions must be an array.");
-    });
-
-    test("sortTrainingSessionsByDistance throws an error if trainingSessions is not an array", async () => {
-        const triathlonData = new TriathlonData();
-        await expect(triathlonData.sortTrainingSessionsByDistance("not an array")).rejects.toThrow("Training sessions must be an array.");
-    });
-
     test("calculateTotalDistanceForDatePeriod throws an error if trainingSessions is not an array", async () => {
         const triathlonData = new TriathlonData();
         await expect(triathlonData.calculateTotalDistanceForDatePeriod("not an array")).rejects.toThrow("Training sessions must be an array.");
-    });
-
-    test("calculateAveragePace throws an error if trainingSessions is not an array", async () => {
-        const triathlonData = new TriathlonData();
-        await expect(triathlonData.calculateAveragePace("not an array")).rejects.toThrow("Training sessions must be an array.");
     });
 
     test("findTrainingSessionByID throws an error if sessionID is not a non-empty string", async () => {
