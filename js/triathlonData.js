@@ -388,12 +388,44 @@ export class TriathlonData {
         if (sessionToEdit.memberID !== loggedInMemberID) {
             throw new Error("You are not authorised to edit this session");
         }
-
+        //Adds old session to history list
+        this.history.addHistory(sessionToEdit);
         // Update the session details
         Object.assign(sessionToEdit, updatedSession);
         await TriathlonData.database.updateData("TrainingSessions", sessionToEdit);
-        //Adds old session to history list
-        this.history.addHistory(sessionToEdit);
         return sessionToEdit;
+    }
+
+    async restoreTrainingSession(sessionID) {
+        const loggedInMemberID = window.localStorage.getItem("currentUser");
+        // Get the session data from history (newest match)
+        const sessionData = this.history.getSessionFromHistory(sessionID);
+
+        if (!sessionData) {
+            throw new Error(`Session with ID ${sessionID} not found in history.`);
+        }
+        if (sessionData.memberID !== loggedInMemberID) {
+            throw new Error("You are not authorised to restore this session");
+        }
+
+
+        try {
+            // Add or update the session in the database
+            const existingSession = await TriathlonData.database.getData("TrainingSessions", sessionID);
+            if (existingSession) {
+                await TriathlonData.database.updateData("TrainingSessions", sessionData);
+            }
+            else {
+                await TriathlonData.database.addData("TrainingSessions", sessionData);
+            }
+
+            //Remove the session from history
+            this.history.removeSessionFromHistory(sessionID);
+            // Return the restored session data
+            return sessionData;
+        } catch (error) {
+            // Handle potential database errors during addData
+            throw new Error(`Failed to restore session ${sessionID}: ${error.message}`);
+        }
     }
 }

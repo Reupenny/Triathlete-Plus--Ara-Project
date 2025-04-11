@@ -92,4 +92,68 @@ describe("History Class Tests", () => {
         history.saveHistory();
         expect(localStorage.getItem("history")).toBe(JSON.stringify([session]));
     });
+
+    // Tests for getSessionFromHistory
+    test("getSessionFromHistory returns the newest session with the given ID", () => {
+        const session1 = { sessionID: "S0001", data: "old" };
+        const session2 = { sessionID: "S0002", data: "unique" };
+        const session3 = { sessionID: "S0001", data: "new" }; // Duplicate ID, newer
+
+        history.addHistory(session1);
+        history.addHistory(session2);
+        history.addHistory(session3);
+
+        const foundSession = history.getSessionFromHistory("S0001");
+        expect(foundSession).toBeDefined();
+        expect(foundSession.data).toBe("new"); // Should find the newest one
+        expect(foundSession).toEqual(session3); // Check the whole object
+    });
+
+    test("getSessionFromHistory returns undefined if session ID not found", () => {
+        const session1 = { sessionID: "S0001", data: "test" };
+        history.addHistory(session1);
+
+        const foundSession = history.getSessionFromHistory("S9999");
+        expect(foundSession).toBeUndefined();
+    });
+
+    // Tests for removeSessionFromHistory
+    test("removeSessionFromHistory removes the newest session with the given ID", () => {
+        const session1 = { sessionID: "S0001", data: "old" };
+        const session2 = { sessionID: "S0002", data: "unique" };
+        const session3 = { sessionID: "S0001", data: "new" }; // Duplicate ID, newer
+
+        history.addHistory(session1);
+        history.addHistory(session2);
+        history.addHistory(session3);
+
+        const initialHistory = history.getHistory();
+        expect(initialHistory.length).toBe(3);
+
+        const removed = history.removeSessionFromHistory("S0001");
+        expect(removed).toBe(true);
+
+        const finalHistory = history.getHistory();
+        expect(finalHistory.length).toBe(2);
+        // Check that the newest S0001 was removed, and the older one remains
+        expect(finalHistory.find(s => s.sessionID === "S0001").data).toBe("old");
+        expect(finalHistory.find(s => s.sessionID === "S0002").data).toBe("unique");
+        // Check localStorage reflects the change
+        expect(localStorage.getItem("history")).toBe(JSON.stringify(finalHistory));
+    });
+
+    test("removeSessionFromHistory returns false if session ID not found", () => {
+        const session1 = { sessionID: "S0001", data: "test" };
+        history.addHistory(session1);
+
+        const initialHistory = history.getHistory();
+        expect(initialHistory.length).toBe(1);
+
+        const removed = history.removeSessionFromHistory("S9999");
+        expect(removed).toBe(false);
+
+        const finalHistory = history.getHistory();
+        expect(finalHistory.length).toBe(1); // History should be unchanged
+        expect(localStorage.getItem("history")).toBe(JSON.stringify(finalHistory));
+    });
 });

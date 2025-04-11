@@ -6,7 +6,7 @@ describe("TriathlonData Class Tests", () => {
     let triathlonData;
 
     beforeEach(async () => {
-        triathlonData = new TriathlonData()
+        triathlonData = new TriathlonData();
         await TriathlonData.database.init();
         member = new Member();
     });
@@ -15,7 +15,6 @@ describe("TriathlonData Class Tests", () => {
         localStorage.clear();
         TriathlonData.database.deleteDatabase().then(done);
     }, 5000);
-
 
     test("findTrainingSessionByID finds an existing training session", async () => {
         // Sets up member for test
@@ -317,6 +316,7 @@ describe("TriathlonData Class Tests", () => {
 
         await expect(triathlonData.deleteTrainingSession(session.sessionID)).rejects.toThrow("You are not authorised to delete this session");
     });
+
 
     test("sortTrainingSessionsByDate sorts training sessions by date", async () => {
         // Sets up member for test
@@ -809,7 +809,6 @@ describe("TriathlonData Class Tests", () => {
         const endDate = "5/1/2025";
         await expect(triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate)).rejects.toThrow("Invalid start date. Please use d/M/yyyy and ensure a valid date.");
     });
-
     test("calculateTotalDistanceForDatePeriod throws an error if endDate is invalid", async () => {
         // Sets up member for test
         await member.createMember("user1", "Alex", "Apple"); // create member
@@ -828,6 +827,131 @@ describe("TriathlonData Class Tests", () => {
         const startDate = "1/1/2025";
         const endDate = "ABC";
         await expect(triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions, startDate, endDate)).rejects.toThrow("Invalid end date. Please use d/M/yyyy and ensure a valid date.");
+    });
+
+    test("restores a training session from history", async () => {
+        await member.createMember("user1", "Alex", "Apple"); // create member
+        await member.login("user1"); // login
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const distance = 10;
+        const duration = 40;
+        const shoesUsed = "Nike";
+        const airTempiture = 20;
+        const weatherCondition = "Cloudy";
+
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        const sessionID = session.sessionID;
+
+        // Delete the session (which adds it to history)
+        await triathlonData.deleteTrainingSession(sessionID);
+        let deletedSession = await triathlonData.findTrainingSessionByID(sessionID);
+        expect(deletedSession).toBeUndefined();
+
+        // Act
+        const restoredSession = await triathlonData.restoreTrainingSession(sessionID);
+
+        // Assert
+        expect(restoredSession).toBeDefined();
+        expect(restoredSession.sessionID).toBe(sessionID);
+
+        // Verify it's back in the database
+        const retrievedSession = await triathlonData.findTrainingSessionByID(sessionID);
+        expect(retrievedSession).toBeDefined();
+        expect(retrievedSession.sessionID).toBe(sessionID);
+
+        // Verify it's removed from history
+        const history = new TriathlonData().history; // Create a new History instance to get the current localStorage data
+        const sessionInHistory = history.getSessionFromHistory(sessionID);
+        expect(sessionInHistory).toBeUndefined();
+    });
+
+    test("throws an error if user is not authorised to restore the session", async () => {
+        // Sets up member for test
+        await member.createMember("user1", "Alex", "Apple"); // create member
+        await member.login("user1"); // login
+
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const distance = 10;
+        const duration = 40;
+        const shoesUsed = "Nike";
+        const airTempiture = 20;
+        const weatherCondition = "Cloudy";
+
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        const sessionID = session.sessionID;
+        await triathlonData.deleteTrainingSession(sessionID);
+
+        const deletedSession = await triathlonData.findTrainingSessionByID(session.sessionID);
+        expect(deletedSession).toBeUndefined();
+        member.logout();
+        await member.createMember("user2", "Bob", "Builder"); // create member
+        await member.login("user2"); // login
+        // Act & Assert
+        await expect(triathlonData.restoreTrainingSession(sessionID)).rejects.toThrow("You are not authorised to restore this session");
+    });
+
+    test("throws an error if the session is not found in history", async () => {
+        await expect(triathlonData.restoreTrainingSession("nonexistent-session-id")).rejects.toThrow("Session with ID nonexistent-session-id not found in history.");
+    });
+
+    test("restores a training session and replaces it if it already exists", async () => {
+        // Sets up member for test
+        await member.createMember("user1", "Alex", "Apple"); // create member
+        await member.login("user1"); // login
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const distance = 10;
+        const duration = 40;
+        const shoesUsed = "Nike";
+        const airTempiture = 20;
+        const weatherCondition = "Cloudy";
+
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        const sessionID = session.sessionID;
+
+        // Edit the session
+        const updatedNotes = "Updated notes";
+        const editSession = { notes: updatedNotes };
+        await triathlonData.editTrainingSession(sessionID, editSession);
+
+
+        // Restore the session
+        const restoredSession = await triathlonData.restoreTrainingSession(sessionID);
+        expect(restoredSession).toBeDefined();
+        expect(restoredSession.sessionID).toBe(sessionID);
+        expect(restoredSession.notes).toBe(notes); // Should have the updated notes
+
+        // Verify it's back in the database and has the updated notes
+        const retrievedSession = await triathlonData.findTrainingSessionByID(sessionID);
+        expect(retrievedSession).toBeDefined();
+        expect(retrievedSession.sessionID).toBe(sessionID);
+        expect(retrievedSession.notes).toBe(notes);
+
+        // Verify it's removed from history
+        const history = new TriathlonData().history; // Create a new History instance to get the current localStorage data
+        const sessionInHistory = history.getSessionFromHistory(sessionID);
+        expect(sessionInHistory).toBeUndefined();
+    });
+    test("restoreTrainingSession throws an error if database.addData fails", async () => {
+        // Sets up member for test
+        await member.createMember("user1", "Alex", "Apple"); // create member
+        await member.login("user1"); // login
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const distance = 10;
+        const duration = 40;
+        const shoesUsed = "Nike";
+        const airTempiture = 20;
+        const weatherCondition = "Cloudy";
+
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        const sessionID = session.sessionID;
+        await triathlonData.deleteTrainingSession(sessionID);
+
+        TriathlonData.database.addData = jest.fn().mockRejectedValue(new Error("Database error"));
+        await expect(triathlonData.restoreTrainingSession(sessionID)).rejects.toThrow(`Failed to restore session ${sessionID}: Database error`);
     });
 
     test("initialiseAndLoad initialises the database", async () => {
