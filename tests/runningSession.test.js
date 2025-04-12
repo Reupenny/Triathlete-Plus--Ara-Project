@@ -58,9 +58,9 @@ describe("RunningSession Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
-        const session = new RunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        const session = new RunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
 
         expect(session.date).toBe(date);
         expect(session.notes).toBe(notes);
@@ -68,7 +68,7 @@ describe("RunningSession Class Tests", () => {
         expect(session.distance).toBe(distance);
         expect(session.duration).toBe(duration);
         expect(session.shoesUsed).toBe(shoesUsed);
-        expect(session.airTempiture).toBe(airTempiture);
+        expect(session.airTemperature).toBe(airTemperature);
         expect(session.weatherCondition).toBe(weatherCondition);
     });
 
@@ -78,9 +78,9 @@ describe("RunningSession Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
-        const session = new RunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        const session = new RunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
         TrainingSession.lastSessionID = 0;
         const expectedDetails = `Session ID:S0001, Member: M0001, Date: ${date}, Notes: ${notes}, Sport Type: Running, Distance: 10 km, Duration: 40 mins, Shoes: Nike, Air Temp: 20, Weather: Cloudy`;
         expect(session.getDetails()).toBe(expectedDetails);

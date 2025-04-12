@@ -58,8 +58,8 @@ describe("SwimmingSession Class Tests", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
-        const session = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+        const waterTemperature = 27;
+        const session = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
 
         expect(session.date).toBe(date);
         expect(session.notes).toBe(notes);
@@ -68,7 +68,7 @@ describe("SwimmingSession Class Tests", () => {
         expect(session.strokeType).toBe(strokeType);
         expect(session.laps).toBe(lapTimes.length);
         expect(session.lapTimes).toBe(lapTimes);
-        expect(session.waterTempiture).toBe(waterTempiture);
+        expect(session.waterTemperature).toBe(waterTemperature);
     });
 
     test("getDetails returns a string with swimming session details", async () => {
@@ -77,10 +77,10 @@ describe("SwimmingSession Class Tests", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
-        const session = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+        const waterTemperature = 27;
+        const session = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
         TrainingSession.lastSessionID = 0;
-        const expectedDetails = `Session ID:S0001, Member: M0001, Date: ${date}, Notes: ${notes}, Sport Type: Swimming, Lap Length: 25, Stroke: Freestyle, Laps: ${session.laps}, Water Temp: ${waterTempiture}`;
+        const expectedDetails = `Session ID:S0001, Member: M0001, Date: ${date}, Notes: ${notes}, Sport Type: Swimming, Lap Length: 25, Stroke: Freestyle, Laps: ${session.laps}, Water Temp: ${waterTemperature}`;
         expect(session.getDetails()).toBe(expectedDetails);
     });
 
@@ -90,8 +90,8 @@ describe("SwimmingSession Class Tests", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
-        const session = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+        const waterTemperature = 27;
+        const session = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
         expect(session.getTotalDistance()).toBe(0.75);
     });
 
@@ -101,8 +101,8 @@ describe("SwimmingSession Class Tests", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
-        const session = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+        const waterTemperature = 27;
+        const session = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
         expect(session.getTotalDuration()).toBe(93);
     });
 });

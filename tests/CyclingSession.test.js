@@ -59,9 +59,9 @@ describe("CyclingSession Class Tests", () => {
         const duration = 60;
         const terrain = "Road";
         const bikeUsed = "Mountain Bike";
-        const airTempiture = 25;
+        const airTemperature = 25;
         const weatherCondition = "Sunny";
-        const session = new CyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTempiture, weatherCondition);
+        const session = new CyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition);
 
         expect(session.date).toBe(date);
         expect(session.notes).toBe(notes);
@@ -70,7 +70,7 @@ describe("CyclingSession Class Tests", () => {
         expect(session.duration).toBe(duration);
         expect(session.terrain).toBe(terrain);
         expect(session.bikeUsed).toBe(bikeUsed);
-        expect(session.airTempiture).toBe(airTempiture);
+        expect(session.airTemperature).toBe(airTemperature);
         expect(session.weatherCondition).toBe(weatherCondition);
     });
 
@@ -81,9 +81,9 @@ describe("CyclingSession Class Tests", () => {
         const duration = 60;
         const terrain = "Road";
         const bikeUsed = "Mountain Bike";
-        const airTempiture = 25;
+        const airTemperature = 25;
         const weatherCondition = "Sunny";
-        const session = new CyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTempiture, weatherCondition);
+        const session = new CyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition);
         TrainingSession.lastSessionID = 0;
         const expectedDetails = `Session ID:S0001, Member: M0001, Date: ${date}, Notes: ${notes}, Sport Type: Cycling, Distance: 20 km, Duration: 60 mins, Terrain: Road, Bike: Mountain Bike, Air Temp: 25, Weather: Sunny`;
         expect(session.getDetails()).toBe(expectedDetails);

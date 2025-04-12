@@ -31,9 +31,9 @@ describe("History Class Tests", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
+        const waterTemperature = 27;
 
-        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
         history.addHistory(session);
         expect(history.getHistory()).toContainEqual(session);
         expect(history.getHistory().length).toBe(1);
@@ -45,9 +45,9 @@ describe("History Class Tests", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
+        const waterTemperature = 27;
 
-        const session1 = triathlonData.CreateSwimmingSession(date1, notes1, lapLength, strokeType, lapTimes, waterTempiture);
+        const session1 = triathlonData.CreateSwimmingSession(date1, notes1, lapLength, strokeType, lapTimes, waterTemperature);
         history.addHistory(session1);
         const firstSession = session1;
 
@@ -57,9 +57,9 @@ describe("History Class Tests", () => {
             const lapLength = 25;
             const strokeType = "Freestyle";
             const lapTimes = [30, 32, 31];
-            const waterTempiture = 27;
+            const waterTemperature = 27;
 
-            const session = triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+            const session = triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
             history.addHistory(session);
         }
         expect(history.getHistory().length).toBe(5);
@@ -72,9 +72,9 @@ describe("History Class Tests", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
+        const waterTemperature = 27;
 
-        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
         history.addHistory(session);
         expect(await history.getHistory()).toEqual([session]);
     });
@@ -85,9 +85,9 @@ describe("History Class Tests", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
+        const waterTemperature = 27;
 
-        const session = triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+        const session = triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
         history.addHistory(session);
         history.saveHistory();
         expect(localStorage.getItem("history")).toBe(JSON.stringify([session]));
@@ -155,5 +155,21 @@ describe("History Class Tests", () => {
         const finalHistory = history.getHistory();
         expect(finalHistory.length).toBe(1); // History should be unchanged
         expect(localStorage.getItem("history")).toBe(JSON.stringify(finalHistory));
+    });
+    test("loadHistory loads the history from localStorage", async () => {
+        const date = new Date().toLocaleDateString('en-NZ');
+        const notes = "Test notes";
+        const lapLength = 25;
+        const strokeType = "Freestyle";
+        const lapTimes = [30, 32, 31];
+        const waterTemperature = 27;
+
+        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
+        history.addHistory(session);
+        history.saveHistory();
+
+        const newHistory = new History();
+        newHistory.loadHistory();
+        expect(newHistory.getHistory()).toEqual([session]);
     });
 });

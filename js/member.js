@@ -1,7 +1,7 @@
 import { TriathlonData } from "../js/triathlonData";
 export class Member {
     #memberID
-    lastMemberID = 0;
+    lastMemberID = 0; // Tracks last member ID
     constructor(memberID, userName, fName, lName) {
         this.#memberID = memberID;
         this.userName = userName;

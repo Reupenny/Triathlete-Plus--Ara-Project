@@ -26,9 +26,9 @@ describe("TriathlonData Class Tests", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
+        const waterTemperature = 27;
 
-        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
 
         const foundSession = triathlonData.findTrainingSessionByID(session.sessionID);
 
@@ -45,9 +45,9 @@ describe("TriathlonData Class Tests", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
+        const waterTemperature = 27;
 
-        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+        const session = await triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
 
         expect(session).toBeInstanceOf(Object);
         expect(session.memberID).toBe(window.localStorage.getItem("currentUser"));
@@ -58,7 +58,7 @@ describe("TriathlonData Class Tests", () => {
         expect(session.strokeType).toBe(strokeType);
         expect(session.laps).toBe(lapTimes.length);
         expect(session.lapTimes).toEqual(lapTimes);
-        expect(session.waterTempiture).toBe(waterTempiture);
+        expect(session.waterTemperature).toBe(waterTemperature);
     });
 
     test("CreateCyclingSession creates a new CyclingSession and adds it to trainingSessions", async () => {
@@ -72,10 +72,10 @@ describe("TriathlonData Class Tests", () => {
         const duration = 60;
         const terrain = "Road";
         const bikeUsed = "Mountain Bike";
-        const airTempiture = 25;
+        const airTemperature = 25;
         const weatherCondition = "Sunny";
 
-        const session = await triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTempiture, weatherCondition);
+        const session = await triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition);
 
         expect(session).toBeInstanceOf(Object);
         expect(session.memberID).toBe(window.localStorage.getItem("currentUser"));
@@ -86,7 +86,7 @@ describe("TriathlonData Class Tests", () => {
         expect(session.duration).toBe(duration);
         expect(session.terrain).toBe(terrain);
         expect(session.bikeUsed).toBe(bikeUsed);
-        expect(session.airTempiture).toBe(airTempiture);
+        expect(session.airTemperature).toBe(airTemperature);
         expect(session.weatherCondition).toBe(weatherCondition);
     });
 
@@ -100,10 +100,10 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
 
-        const session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        const session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
 
         expect(session).toBeInstanceOf(Object);
         expect(session.memberID).toBe(window.localStorage.getItem("currentUser"));
@@ -113,11 +113,11 @@ describe("TriathlonData Class Tests", () => {
         expect(session.distance).toBe(distance);
         expect(session.duration).toBe(duration);
         expect(session.shoesUsed).toBe(shoesUsed);
-        expect(session.airTempiture).toBe(airTempiture);
+        expect(session.airTemperature).toBe(airTemperature);
         expect(session.weatherCondition).toBe(weatherCondition);
     });
 
-    test("CreateCyclingSession sets airTempiture to 'NA' when not provided", async () => {
+    test("CreateCyclingSession sets airTemperature to 'NA' when not provided", async () => {
         // Sets up member for test
         await member.createMember("user1", "Alex", "Apple"); // create member
         await member.login("user1"); // login
@@ -132,7 +132,7 @@ describe("TriathlonData Class Tests", () => {
 
         const session = await triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, undefined, weatherCondition);
 
-        expect(session.airTempiture).toBe("NA");
+        expect(session.airTemperature).toBe("NA");
     });
 
     test("CreateCyclingSession sets weatherCondition to '' when not provided", async () => {
@@ -146,14 +146,14 @@ describe("TriathlonData Class Tests", () => {
         const duration = 60;
         const terrain = "Road";
         const bikeUsed = "Mountain Bike";
-        const airTempiture = 25;
+        const airTemperature = 25;
 
-        const session = await triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTempiture, undefined);
+        const session = await triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, undefined);
 
         expect(session.weatherCondition).toBe("");
     });
 
-    test("CreateRunningSession sets airTempiture to 'NA' when not provided", async () => {
+    test("CreateRunningSession sets airTemperature to 'NA' when not provided", async () => {
         // Sets up member for test
         await member.createMember("user1", "Alex", "Apple"); // create member
         await member.login("user1"); // login
@@ -167,7 +167,7 @@ describe("TriathlonData Class Tests", () => {
 
         const session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, undefined, weatherCondition);
 
-        expect(session.airTempiture).toBe("NA");
+        expect(session.airTemperature).toBe("NA");
     });
 
     test("CreateRunningSession sets weatherCondition to '' when not provided", async () => {
@@ -180,9 +180,9 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
 
-        const session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, undefined);
+        const session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, undefined);
 
         expect(session.weatherCondition).toBe("");
     });
@@ -215,10 +215,10 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
 
-        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
 
         const updatedNotes = "Updated notes";
         const updatedDistance = 15;
@@ -246,10 +246,10 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
 
-        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
 
         await triathlonData.deleteTrainingSession(session.sessionID);
 
@@ -275,10 +275,10 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
 
-        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
 
         member.logout();
         await member.createMember("user2", "Bob", "Builder"); // create member
@@ -305,10 +305,10 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
 
-        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
 
         member.logout();
         await member.createMember("user2", "Bob", "Builder"); // create member
@@ -493,7 +493,7 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, 123, [30, 32, 31], 27)).rejects.toThrow("Stroke Type must be a string.");
     });
 
-    test("throws an error if waterTempiture is not a number", async () => {
+    test("throws an error if waterTemperature is not a number", async () => {
         await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, "Freestyle", [30, 32, 31], "27")).rejects.toThrow("Water temperature must be a number.");
     });
 
@@ -501,7 +501,7 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 0, "Freestyle", [30, 32, 31], 27)).rejects.toThrow("Lap length must be greater than zero.");
     });
 
-    test("throws an error if waterTempiture is less than 0 or greater than 40", async () => {
+    test("throws an error if waterTemperature is less than 0 or greater than 40", async () => {
         await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, "Freestyle", [30, 32, 31], -1)).rejects.toThrow("Water temperature must be between 0 and 40 degrees Celsius.");
         await expect(triathlonData.CreateSwimmingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 25, "Freestyle", [30, 32, 31], 41)).rejects.toThrow("Water temperature must be between 0 and 40 degrees Celsius.");
     });
@@ -538,7 +538,7 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 0, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Duration must be greater than zero.");
     });
 
-    test("throws an error if airTempiture is not a number", async () => {
+    test("throws an error if airTemperature is not a number", async () => {
         await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, "Road", "Mountain Bike", "25", "Sunny")).rejects.toThrow("Air temperature must be a number.");
     });
 
@@ -566,7 +566,7 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 0, 60, "Road", "Mountain Bike", 25, "Sunny")).rejects.toThrow("Distance must be greater than zero.");
     });
 
-    test("throws an error if airTempiture is less than -20 or greater than 50", async () => {
+    test("throws an error if airTemperature is less than -20 or greater than 50", async () => {
         await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, "Road", "Mountain Bike", -21, "Sunny")).rejects.toThrow("Air temperature must be between -20 and 50 degrees Celsius.");
         await expect(triathlonData.CreateCyclingSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 20, 60, "Road", "Mountain Bike", 51, "Sunny")).rejects.toThrow("Air temperature must be between -20 and 50 degrees Celsius.");
     });
@@ -592,7 +592,7 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 0, "Nike", 20, "Cloudy")).rejects.toThrow("Duration must be greater than zero.");
     });
 
-    test("throws an error if airTempiture is not a number", async () => {
+    test("throws an error if airTemperature is not a number", async () => {
         await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 40, "Nike", "20", "Cloudy")).rejects.toThrow("Air temperature must be a number.");
     });
 
@@ -612,7 +612,7 @@ describe("TriathlonData Class Tests", () => {
         await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 0, 40, "Nike", 20, "Cloudy")).rejects.toThrow("Distance must be greater than zero.");
     });
 
-    test("throws an error if airTempiture is less than -20 or greater than 50", async () => {
+    test("throws an error if airTemperature is less than -20 or greater than 50", async () => {
         await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 40, "Nike", -21, "Cloudy")).rejects.toThrow("Air temperature must be between -20 and 50 degrees Celsius.");
         await expect(triathlonData.CreateRunningSession(new Date().toLocaleDateString('en-NZ'), "Test notes", 10, 40, "Nike", 51, "Cloudy")).rejects.toThrow("Air temperature must be between -20 and 50 degrees Celsius.");
     });
@@ -837,10 +837,10 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
 
-        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
         const sessionID = session.sessionID;
 
         // Delete the session (which adds it to history)
@@ -876,10 +876,10 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
 
-        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
         const sessionID = session.sessionID;
         await triathlonData.deleteTrainingSession(sessionID);
 
@@ -905,10 +905,10 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
 
-        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
         const sessionID = session.sessionID;
 
         // Edit the session
@@ -943,10 +943,10 @@ describe("TriathlonData Class Tests", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 20;
+        const airTemperature = 20;
         const weatherCondition = "Cloudy";
 
-        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+        let session = await triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
         const sessionID = session.sessionID;
         await triathlonData.deleteTrainingSession(sessionID);
 
@@ -993,11 +993,11 @@ describe("TriathlonData Class Tests - database.addData failure", () => {
         const lapLength = 25;
         const strokeType = "Freestyle";
         const lapTimes = [30, 32, 31];
-        const waterTempiture = 27;
+        const waterTemperature = 27;
 
         TriathlonData.database.addData = jest.fn().mockRejectedValue(new Error("Database error"));
 
-        await expect(triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture)).rejects.toThrow("Error creating swimming session.");
+        await expect(triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature)).rejects.toThrow("Error creating swimming session.");
     });
 
     test("CreateCyclingSession throws an error if database.addData fails", async () => {
@@ -1007,12 +1007,12 @@ describe("TriathlonData Class Tests - database.addData failure", () => {
         const duration = 60;
         const terrain = "Road";
         const bikeUsed = "Mountain Bike";
-        const airTempiture = 25;
+        const airTemperature = 25;
         const weatherCondition = "Sunny";
 
         TriathlonData.database.addData = jest.fn().mockRejectedValue(new Error("Database error"));
 
-        await expect(triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTempiture, weatherCondition)).rejects.toThrow("Error creating cycling session.");
+        await expect(triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition)).rejects.toThrow("Error creating cycling session.");
     });
 
     test("CreateRunningSession throws an error if database.addData fails", async () => {
@@ -1021,11 +1021,11 @@ describe("TriathlonData Class Tests - database.addData failure", () => {
         const distance = 10;
         const duration = 40;
         const shoesUsed = "Nike";
-        const airTempiture = 25;
+        const airTemperature = 25;
         const weatherCondition = "Cloudy";
 
         TriathlonData.database.addData = jest.fn().mockRejectedValue(new Error("Database error"));
 
-        await expect(triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition)).rejects.toThrow("Error creating running session.");
+        await expect(triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition)).rejects.toThrow("Error creating running session.");
     });
 });

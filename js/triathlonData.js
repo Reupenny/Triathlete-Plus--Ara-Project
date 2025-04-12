@@ -15,7 +15,7 @@ export class TriathlonData {
         await TriathlonData.database.init();
     }
 
-    async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture) {
+    async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature) {
         // Handle missing date:  If no date is provided, use the current date
         if (!date) {
             date = new Date().toLocaleDateString('en-NZ');
@@ -30,15 +30,15 @@ export class TriathlonData {
         if (typeof strokeType !== 'string') {
             throw new Error("Stroke Type must be a string.");
         }
-        // Water Temperature Type Check:  Ensure waterTempiture is a number
-        if (typeof waterTempiture !== 'number') {
+        // Water Temperature Type Check:  Ensure waterTemperature is a number
+        if (typeof waterTemperature !== 'number') {
             throw new Error("Water temperature must be a number.");
         }
         // Range Checks:  Validate that numeric values are within acceptable ranges
         if (lapLength <= 0) {
             throw new Error("Lap length must be greater than zero.");
         }
-        if (waterTempiture < 0 || waterTempiture > 40) {
+        if (waterTemperature < 0 || waterTemperature > 40) {
             throw new Error("Water temperature must be between 0 and 40 degrees Celsius.");
         }
         // Format Validation Date
@@ -59,7 +59,7 @@ export class TriathlonData {
             }
         }
         try {
-            const newSession = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTempiture);
+            const newSession = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
             const distance = newSession.getTotalDistance();
             const sessionData = {
                 sessionID: newSession.sessionID,
@@ -71,7 +71,7 @@ export class TriathlonData {
                 strokeType: newSession.strokeType,
                 laps: newSession.laps,
                 lapTimes: newSession.lapTimes,
-                waterTempiture: newSession.waterTempiture,
+                waterTemperature: newSession.waterTemperature,
                 distance: distance
             };
             await TriathlonData.database.addData("TrainingSessions", sessionData);
@@ -82,7 +82,7 @@ export class TriathlonData {
         }
     }
 
-    async CreateCyclingSession(date, notes, distance, duration, terain, bikeUsed, airTempiture, weatherCondition) {
+    async CreateCyclingSession(date, notes, distance, duration, terain, bikeUsed, airTemperature, weatherCondition) {
         // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
         if (!date) {
             date = new Date().toLocaleDateString('en-NZ');
@@ -119,13 +119,13 @@ export class TriathlonData {
         if (distance <= 0) {
             throw new Error("Distance must be greater than zero.");
         }
-        if (!airTempiture) {
-            airTempiture = "NA"
+        if (!airTemperature) {
+            airTemperature = "NA"
         }
-        if (typeof airTempiture !== 'number' && airTempiture !== "NA") {
+        if (typeof airTemperature !== 'number' && airTemperature !== "NA") {
             throw new Error("Air temperature must be a number.");
         }
-        if (airTempiture !== "NA" && (airTempiture < -20 || airTempiture > 50)) {
+        if (airTemperature !== "NA" && (airTemperature < -20 || airTemperature > 50)) {
             throw new Error("Air temperature must be between -20 and 50 degrees Celsius.");
         }
 
@@ -136,7 +136,7 @@ export class TriathlonData {
         }
 
         try {
-            const newSession = new CyclingSession(date, notes, distance, duration, terain, bikeUsed, airTempiture, weatherCondition);
+            const newSession = new CyclingSession(date, notes, distance, duration, terain, bikeUsed, airTemperature, weatherCondition);
             const sessionData = {
                 sessionID: newSession.sessionID,
                 memberID: newSession.memberID,
@@ -147,7 +147,7 @@ export class TriathlonData {
                 duration: newSession.duration,
                 terrain: newSession.terrain,
                 bikeUsed: newSession.bikeUsed,
-                airTempiture: newSession.airTempiture,
+                airTemperature: newSession.airTemperature,
                 weatherCondition: newSession.weatherCondition
             };
             await TriathlonData.database.addData("TrainingSessions", sessionData);
@@ -156,7 +156,7 @@ export class TriathlonData {
             throw new Error("Error creating cycling session.", error);
         }
     }
-    async CreateRunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition) {
+    async CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition) {
         // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
         if (!date) {
             date = new Date().toLocaleDateString('en-NZ');
@@ -187,13 +187,13 @@ export class TriathlonData {
         if (distance <= 0) {
             throw new Error("Distance must be greater than zero.");
         }
-        if (!airTempiture) {
-            airTempiture = "NA"
+        if (!airTemperature) {
+            airTemperature = "NA"
         }
-        if (typeof airTempiture !== 'number' && airTempiture !== "NA") {
+        if (typeof airTemperature !== 'number' && airTemperature !== "NA") {
             throw new Error("Air temperature must be a number.");
         }
-        if (airTempiture !== "NA" && (airTempiture < -20 || airTempiture > 50)) {
+        if (airTemperature !== "NA" && (airTemperature < -20 || airTemperature > 50)) {
             throw new Error("Air temperature must be between -20 and 50 degrees Celsius.");
         }
 
@@ -203,7 +203,7 @@ export class TriathlonData {
             throw new Error(`Invalid date. Please use d/M/yyyy and ensure a valid date.`);
         }
         try {
-            const newSession = new RunningSession(date, notes, distance, duration, shoesUsed, airTempiture, weatherCondition);
+            const newSession = new RunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
             const sessionData = {
                 sessionID: newSession.sessionID,
                 memberID: newSession.memberID,
@@ -213,7 +213,7 @@ export class TriathlonData {
                 distance: newSession.distance,
                 duration: newSession.duration,
                 shoesUsed: newSession.shoesUsed,
-                airTempiture: newSession.airTempiture,
+                airTemperature: newSession.airTemperature,
                 weatherCondition: newSession.weatherCondition
             };
             await TriathlonData.database.addData("TrainingSessions", sessionData);
@@ -253,7 +253,7 @@ export class TriathlonData {
         }
         const sessionsWithDistance = trainingSessions.map(session => {
             if (session.sportType === "Swimming") {
-                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTempiture);
+                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemperature);
                 session.distance = swimmingSession.getTotalDistance();
             }
             return session;
@@ -296,7 +296,7 @@ export class TriathlonData {
         filteredSessions.forEach(session => {
             let distance = session.distance;
             if (session.sportType === "Swimming") {
-                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTempiture);
+                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemperature);
                 distance = swimmingSession.getTotalDistance();
             }
             if (distance) {
@@ -317,7 +317,7 @@ export class TriathlonData {
         trainingSessions.forEach(session => {
             let distance = session.distance;
             if (session.sportType === "Swimming") {
-                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTempiture);
+                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemperature);
                 distance = swimmingSession.getTotalDistance();
             }
 
@@ -407,8 +407,6 @@ export class TriathlonData {
         if (sessionData.memberID !== loggedInMemberID) {
             throw new Error("You are not authorised to restore this session");
         }
-
-
         try {
             // Add or update the session in the database
             const existingSession = await TriathlonData.database.getData("TrainingSessions", sessionID);
@@ -418,7 +416,6 @@ export class TriathlonData {
             else {
                 await TriathlonData.database.addData("TrainingSessions", sessionData);
             }
-
             //Remove the session from history
             this.history.removeSessionFromHistory(sessionID);
             // Return the restored session data
