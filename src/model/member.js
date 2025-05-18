@@ -1,4 +1,4 @@
-import { TriathlonData } from "../js/triathlonData";
+import { TriathlonData } from "./triathlonData";
 export class Member {
     #memberID
     lastMemberID = 0; // Tracks last member ID
@@ -80,10 +80,13 @@ export class Member {
             const currentMember = await TriathlonData.database.getData("Members", memberID);
             if (currentMember) {
                 window.localStorage.setItem("currentUser", currentMember.memberID); // Sets the current member in local storage
+                window.localStorage.setItem("LoggedIn", true);
                 return true; // Login successful
             }
         }
+        window.localStorage.setItem("LoggedIn", false);
         return false; // Login failed (user not found)
+
     }
 
     logout() {
