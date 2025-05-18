@@ -81,7 +81,7 @@ export class Member {
             if (currentMember) {
                 window.localStorage.setItem("currentUser", currentMember.memberID); // Sets the current member in local storage
                 window.localStorage.setItem("LoggedIn", true);
-                return true; // Login successful
+                return currentMember; // Login successful
             }
         }
         window.localStorage.setItem("LoggedIn", false);
@@ -91,6 +91,7 @@ export class Member {
 
     logout() {
         window.localStorage.removeItem("currentUser");
+        window.localStorage.setItem("LoggedIn", false);
     }
 
     generateMemberID() {

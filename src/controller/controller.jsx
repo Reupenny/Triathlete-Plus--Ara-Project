@@ -1,49 +1,48 @@
 class TriathlonController {
-    constructor(data, view, member) {
+    constructor(data, member) {
         this.data = data
-        this.view = view
         this.member = member
 
-        // DOM Elements
-        this.LoginForm = document.getElementById('LoginForm');
-        this.registerNewUser = document.getElementById('signup-btn');
-
-
-        // Bind event listeners
-        if (this.LoginForm) {
-            this.LoginForm.addEventListener('submit', this.handleLogin.bind(this));
-        }
-        if (this.registerNewUser) {
-            this.registerNewUser.addEventListener('click', this.registerUser.bind(this));
-        }
-
-        // Initial render
 
         // Setup
-        this.data.initialiseAndLoad()
-
-    }
-
-
-    handleLogin(event) {
-        event.preventDefault();
-        const username = document.getElementById('username').value;
-        console.log('Login ' + username)
-        const login = this.member.login(username)
-
-        if (login === true) {
-            console.log("hello world")
-        }
-        else {
-            console.log("hello womp")
+        try {
+            this.data.initialiseAndLoad()
+            console.log('setup good');
+        } catch (error) {
+            console.error('Error setting up:', error);
         }
     }
 
-    registerUser() {
-        console.log('register')
-        document.getElementById('hide').style.display = 'block';
-        this.view.Register();
+
+    async handleLogin(username) {
+
+        try {
+            const loginResult = await this.member.login(username);
+            if (!loginResult) {
+                throw new Error('Invalid username');
+            }
+            console.log('User Logged in');
+            return loginResult
+        } catch (error) {
+            console.error('Error Logging in user:', error);
+            return
+        }
+    }
+
+    async handleSignUp(userName, fName, lName) {
+        try {
+            await this.member.createMember(userName, fName, lName);
+            console.log('User registered successfully');
+        } catch (error) {
+            console.error('Error registering user:', error);
+        }
+    }
+
+    async handleLogout() {
+        await this.member.logout();
+        return true
     }
 }
+
 
 export default TriathlonController

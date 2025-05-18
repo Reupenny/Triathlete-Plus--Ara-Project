@@ -2,75 +2,212 @@ import Logo from '../../assets/Logo.webp'
 import { useState } from 'react';
 
 
-function Login() {
-  const loggedIn = localStorage.getItem('LoggedIn');
-  if (loggedIn !== 'true') {
-    return (
-      <div id="login">
-        <img className='logo' src={Logo} alt="Triathlete plus logo" />
-        <div>
-          <form id='LoginForm'>
-            <h2>Login</h2>
-            <input type="text" id="username" name="Username" placeholder="Username" required />
+function Login({ onRegister, onSubmit }) {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    onSubmit(username);
+  };
 
-            <input type="submit" value="Login" />
-          </form>
-          <button id='signup-btn'>Sign Up</button>
-        </div>
-      </div>
-    )
-  }
-  return null;
-}
-
-function Register() {
   return (
-    <div className="box" id="signup">
-      <form id='registerForm'>
-        <h2>Register</h2>
-        <input type="text" id="username" name="Username" placeholder="Username" required />
-        <input type="text" id="fName" name="fName" placeholder="First Name" required />
-        <input type="text" id="lName" name="lName" placeholder="Last Name" required />
+    <div id="login">
+      <img className='logo' src={Logo} alt="Triathlete plus logo" />
+      <div>
+        <form id='LoginForm' onSubmit={handleSubmit}>
+          <h2>Login</h2>
+          <input type="text" id="username" name="Username" placeholder="Username" required />
 
-        <input type="submit" value="Sign Up" />
-      </form>
+          <input type="submit" value="Login" />
+        </form>
+        <button id='signup-btn' onClick={onRegister}>Sign Up</button>
+      </div>
     </div>
-  )
+
+  );
 }
 
-function MainPanel() {
-  const loggedIn = localStorage.getItem('LoggedIn');
-  if (loggedIn == 'true') {
-    return (
-      <>
-        <main className='box' >Main</main>
-      </>
-    )
-  }
-  else {
-    return null;
-  }
+function Register({ onHide, onSignUp }) {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const username = document.getElementById('registerUsername').value;
+    const fName = document.getElementById('fName').value;
+    const lName = document.getElementById('lName').value;
+    onSignUp(username, fName, lName);
+  };
+
+  return (
+    <>
+      <div id="hide" onClick={onHide}></div>
+      <div className="box" id="signup">
+        <div>
+          <h2>Register</h2>
+          <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
+        </div>
+        <form id='registerForm' onSubmit={handleSubmit}>
+          <input type="text" id="registerUsername" name="Username" placeholder="Username" required />
+          <input type="text" id="fName" name="fName" placeholder="First Name" required />
+          <input type="text" id="lName" name="lName" placeholder="Last Name" required />
+
+          <input type="submit" value="Register" id='register-btn' />
+        </form>
+      </div>
+    </>
+  );
 }
 
-function SidePanel() {
+function UserPage({ logout, onNewSession }) {
+  return (
+    <div id='userPage'>
+      <div>
+        <img className='logo' src={Logo} alt="Triathlete plus logo" />
+        <p>User</p>
+        <button onClick={onNewSession}>New Session</button>
+        <form>
+          <input type="text" id="searchSessions" placeholder="Search training sessions" />
+        </form>
+      </div>
+      <div className='row'>
+        <p>First Name</p>
+        <button className='icon icon-settings'></button>
+        <button onClick={logout}>Logout</button>
+      </div>
+    </div>
+  );
+}
+
+function NewSession({ onHide, onSignUp }) {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const username = document.getElementById('registerUsername').value;
+    const fName = document.getElementById('fName').value;
+    const lName = document.getElementById('lName').value;
+    CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
+  };
+
+  return (
+    <>
+      <div id="hide" onClick={onHide}></div>
+      <div className="box" id="newSession">
+        <div>
+          <h2>New Session</h2>
+          <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
+        </div>
+        <div><button id='running'>Running</button><button id='swimming'>Swimming</button><button id='cycling'>Cycling</button></div>
+        <form id='registerForm' onSubmit={handleSubmit}>
+          <input type="date" id="newDate" name="newDate" placeholder="01/01/2025" />
+          <input type="number" id='newDistance' placeholder="Distance (km)" min="0" />
+          <input type="number" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" />
+          <div className='row'>
+            <select id="newWeather" name="newWeather">
+              <option value="" disabled selected>Weather Condition</option>
+              <option value="Sunny">Sunny</option>
+              <option value="Overcast">Overcast</option>
+              <option value="Rain">Rain</option>
+              <option value="Misty">Misty</option>
+              <option value="Stormy">Stormy</option>
+            </select>
+            <input type="number" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" />
+          </div>
+          <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" />
+
+          <input type="submit" value="Submit" id='register-btn' />
+        </form>
+      </div>
+    </>
+  );
+}
+
+function MainPanel({ newSession, onHide }) {
+  return (
+    <>
+      {newSession ? (<NewSession onHide={onHide} />) : null}
+
+
+      <main>
+        <div className='box' >
+          <div>
+            <h2>Training Sessions</h2>
+            <div className='row'> <h3>Sort by: </h3> <button>Date</button><button>Type</button><button>Distance</button></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <td>Table Head</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Table Data</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className='box' >
+          <div>
+            <h2>Training Data</h2>
+          </div>
+        </div>
+      </main>
+
+    </>
+  );
+}
+
+function SidePanel({ showRegister, onRegister, onHide, onSignUp, onSubmit, loggedIn, logout, onNewSession }) {
   return (
     <>
       <aside className='box' >
-        <Login />
+        {loggedIn ? <UserPage logout={logout} onNewSession={onNewSession} /> : <Login onRegister={onRegister} onSubmit={onSubmit} />}
       </aside>
+      {showRegister ? <Register onHide={onHide} onSignUp={onSignUp} /> : <></>}
     </>
-  )
+  );
 }
 
 
-function TriathlonView() {
-  console.log('Update Main')
+function TriathlonView({ controller }) {
+  const [showRegister, setShowRegister] = useState(false);
+  const [newSession, setNewSession] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(localStorage.getItem('LoggedIn') === 'true');
+
+  const handleRegister = () => {
+    setShowRegister(true);
+  };
+
+  const handleHide = () => {
+    setShowRegister(false);
+    setNewSession(false);
+  };
+
+  const handleSignUp = (username, fName, lName) => {
+    controller.handleSignUp(username, fName, lName);
+  };
+
+  const handleSubmit = async (username) => {
+    let login = await controller.handleLogin(username)
+    console.log('user: ' + login)
+    if (login) {
+      setLoggedIn(true);
+    }
+  };
+
+  const handlelogout = () => {
+    controller.handleLogout()
+    if (controller.handleLogout() !== 'false') {
+      setLoggedIn(false);
+    }
+  }
+  const handleNewSession = () => {
+    setNewSession(true);
+  }
+
   return (
     <>
-      <SidePanel />
-      <MainPanel />
+      <SidePanel showRegister={showRegister} onRegister={handleRegister} onHide={handleHide} onSignUp={handleSignUp} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleNewSession} />
+      {loggedIn ? (<MainPanel newSession={newSession} onHide={handleHide} />) : null}
+
     </>
-  )
+  );
 }
 
 

@@ -1,0 +1,71 @@
+/*--------------------------------
+
+Icons icon font
+Generated using nucleoapp.com
+
+-------------------------------- */
+
+@font-face {
+  font-family: 'Icons';
+  src: url('../assets/fonts/Icons.eot');
+  src: url('../assets/fonts/Icons.eot') format('embedded-opentype'),
+    url('../assets/fonts/Icons.woff2') format('woff2'),
+    url('../assets/fonts/Icons.woff') format('woff'),
+    url('../assets/fonts/Icons.ttf') format('truetype'),
+    url('../assets/fonts/Icons.svg') format('svg');
+}
+
+/* base class */
+.icon {
+  display: inline-block;
+  font: normal normal normal 1.5em 'Icons';
+  color: inherit;
+  flex-shrink: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: 500ms ease-in-out;
+}
+
+/* icons */
+.icon-edit::before {
+  content: "\ea02";
+}
+
+.icon-trash::before {
+  content: "\ea03";
+}
+
+.icon-return::before {
+  content: "\ea04";
+}
+
+.icon-double-checkmark::before {
+  content: "\ea05";
+}
+
+.icon-checkmark::before {
+  content: "\ea06";
+}
+
+.icon-search::before {
+  content: "\ea07";
+}
+
+.icon-add::before {
+  content: "\ea08";
+}
+
+.icon-close::before {
+  content: "\ea09";
+}
+
+.icon-settings::before {
+  content: "\ea0a";
+}
+
+
+/* Hover */
+
+.icon-settings:hover {
+  transform: rotate(45deg);
+}
