@@ -1,5 +1,7 @@
+// Import  styles
 import '../assets/styles/main.css'
 import '../assets/styles/icons.css'
+
 import { useEffect, useState } from 'react';
 
 import TriathlonView from './view/view.jsx'
@@ -13,9 +15,9 @@ function App() {
     const [controller, setController] = useState(null);
 
     useEffect(() => {
-        const data = new TriathlonData()
+        const triathlonData = new TriathlonData()
         const member = new Member()
-        const triathlonController = new TriathlonController(data, member);
+        const triathlonController = new TriathlonController(triathlonData, member);
         setController(triathlonController);
     }, []);
 

@@ -1,0 +1,23 @@
+{
+  "lang": "en-us",
+  "name": "Triathlete+",
+  "short_name": "Temperature converter",
+  "description": "An app for triathletes to track basic stats about swimming, running and cycling.",
+  "start_url": "/",
+  "background_color": "#0067C4",
+  "theme_color": "#0067C4",
+  "orientation": "any",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/assets/icons/icon512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/assets/icons/icon192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ]
+}

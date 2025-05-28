@@ -1,6 +1,6 @@
 import { SwimmingSession } from "./swimmingSession";
 import { RunningSession } from "./runningSession";
-import { CyclingSession } from "./CyclingSession";
+import { CyclingSession } from "./cyclingSession";
 import { History } from "./history";
 import { Database } from "./database";
 import { isValid, parse } from 'date-fns';
@@ -82,7 +82,7 @@ export class TriathlonData {
         }
     }
 
-    async CreateCyclingSession(date, notes, distance, duration, terain, bikeUsed, airTemperature, weatherCondition) {
+    async CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition) {
         // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
         if (!date) {
             date = new Date().toLocaleDateString('en-NZ');
@@ -97,10 +97,10 @@ export class TriathlonData {
         if (duration <= 0) {
             throw new Error("Duration must be greater than zero.");
         }
-        if (!terain) {
+        if (!terrain) {
             throw new Error("Terrain is required.");
         }
-        if (typeof terain !== 'string') {
+        if (typeof terrain !== 'string') {
             throw new Error("Terrain must be a string.");
         }
         if (!bikeUsed) {
@@ -136,7 +136,7 @@ export class TriathlonData {
         }
 
         try {
-            const newSession = new CyclingSession(date, notes, distance, duration, terain, bikeUsed, airTemperature, weatherCondition);
+            const newSession = new CyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition);
             const sessionData = {
                 sessionID: newSession.sessionID,
                 memberID: newSession.memberID,

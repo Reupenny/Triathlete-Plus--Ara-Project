@@ -13,14 +13,20 @@ export class Member {
         return this.#memberID;
     }
 
-    getDetails() {
-        return {
-            memberID: this.memberID,
-            userName: this.userName,
-            fName: this.fName,
-            lName: this.lName
+    async getDetails(memberID) {
+        const allMembers = await TriathlonData.database.getAllData("Members");
+        if (allMembers) {
+            const member = await allMembers.find(m => m.memberID === memberID);
+            if (member) {
+                       const memberData = {
+                    memberID: member.memberID,
+                    userName: member.userName,
+                    fName: member.fName,
+                    lName: member.lName
         };
-    }
+                return memberData
+            }}}
+                
     async createMember(userName, fName, lName) {
         if (typeof userName !== 'string') {
             throw new Error("Username must be a string");
@@ -79,7 +85,7 @@ export class Member {
         if (memberID) {
             const currentMember = await TriathlonData.database.getData("Members", memberID);
             if (currentMember) {
-                window.localStorage.setItem("currentUser", currentMember.memberID); // Sets the current member in local storage
+                window.localStorage.setItem("currentUser", JSON.stringify(currentMember)); // Sets the current member in local storage
                 window.localStorage.setItem("LoggedIn", true);
                 return currentMember; // Login successful
             }
@@ -95,7 +101,13 @@ export class Member {
     }
 
     generateMemberID() {
+        let localID = window.localStorage.getItem("lastMemberID");
+        let lastId = this.lastMemberID
+        if (lastId == 0 & localID) {
+            this.lastMemberID = localID
+        }
         this.lastMemberID++; // Increment last used ID
+        window.localStorage.setItem("lastMemberID", this.lastMemberID);
         return `M${String(this.lastMemberID).padStart(4, '0')}`;
     }
 }

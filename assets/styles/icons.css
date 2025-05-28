@@ -7,12 +7,12 @@ Generated using nucleoapp.com
 
 @font-face {
   font-family: 'Icons';
-  src: url('../assets/fonts/Icons.eot');
-  src: url('../assets/fonts/Icons.eot') format('embedded-opentype'),
-    url('../assets/fonts/Icons.woff2') format('woff2'),
-    url('../assets/fonts/Icons.woff') format('woff'),
-    url('../assets/fonts/Icons.ttf') format('truetype'),
-    url('../assets/fonts/Icons.svg') format('svg');
+  src: url('../fonts/Icons.eot');
+  src: url('../fonts/Icons.eot') format('embedded-opentype'),
+    url('../fonts/Icons.woff2') format('woff2'),
+    url('../fonts/Icons.woff') format('woff'),
+    url('../fonts/Icons.ttf') format('truetype'),
+    url('../fonts/Icons.svg') format('svg');
 }
 
 /* base class */
@@ -62,6 +62,11 @@ Generated using nucleoapp.com
 .icon-settings::before {
   content: "\ea0a";
 }
+
+.icon-info::before {
+  content: "\ea0b";
+}
+
 
 
 /* Hover */

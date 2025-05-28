@@ -109,6 +109,30 @@ h2 {
 
 h3 {}
 
+/* Background effect */
+.glow-circle {
+    position: absolute;
+    width: 900px;
+    height: 900px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 19, 137, 0) 0%, white 100%);
+    pointer-events: none;
+    filter: blur(200px);
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    transition: left 0.1s ease-out, top 0.1s ease-out;
+}
+
+.glowBox {
+    overflow: unset;
+    width: 100%;
+    z-index: -1;
+    position: fixed;
+    height: 100%;
+    top: 0;
+}
+
+
 body {
     font-family: "Roboto", sans-serif;
     font-optical-sizing: auto;
@@ -183,6 +207,67 @@ button:hover {
     gap: 2em;
 }
 
+#notification {
+    z-index: 2000;
+    max-width: 300px;
+    margin: 1em;
+    position: fixed;
+    top: -100px;
+    justify-self: center;
+    box-shadow: 0px 0px 18px -5px rgba(0, 0, 0, 0.67);
+    -webkit-box-shadow: 0px 0px 18px -5px rgba(0, 0, 0, 0.67);
+    -moz-box-shadow: 0px 0px 18px -5px rgba(0, 0, 0, 0.67);
+    border-radius: 10px;
+    transition: top 0.5s ease-in-out;
+    background-color: white;
+}
+
+#notification.show {
+    top: 10px;
+}
+
+#notification>div {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 10px;
+    border-style: solid;
+    padding: 1em;
+    margin: .2em;
+    background-color: white;
+}
+
+#notification p {
+    /* transition: 5s ease-in-out; */
+}
+
+#notification .icon-info {
+    padding-right: .5em;
+}
+
+.error>div,
+.error p {
+    border-color: var(--pink);
+    color: var(--pink);
+    background-color: white;
+    /* transition: 0.5s ease-in-out !important; */
+}
+
+.error {
+    background-color: var(--pink) !important;
+}
+
+.success>div,
+.success p {
+    border-color: var(--blue);
+    color: var(--blue);
+    background-color: white;
+}
+
+.success {
+    background-color: var(--blue) !important;
+}
+
 
 input[type="text"],
 input[type="password"],
@@ -192,7 +277,10 @@ input[type="date"],
 input[type="time"],
 textarea,
 select {
+    width: 100%;
+    width: -moz-available;
     width: -webkit-fill-available;
+    width: fill-available;
     padding: 8px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
@@ -207,7 +295,11 @@ textarea {
 
 
 input[type="submit"] {
+    width: 100%;
+    width: -moz-available;
     width: -webkit-fill-available;
+    width: fill-available;
+
     padding: 5px 10px;
     margin: 5px 5px;
     background-color: var(--blue);
@@ -226,7 +318,10 @@ input[type="submit"]:hover {
     background-color: var(--pink);
     border-style: none;
     color: white;
+    width: 100%;
+    width: -moz-available;
     width: -webkit-fill-available;
+    width: fill-available;
 }
 
 #signup-btn:hover {
@@ -245,7 +340,7 @@ input[type="submit"]:hover {
     z-index: 2000;
 }
 
-#newSession {
+#newSession, #settings {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -256,7 +351,8 @@ input[type="submit"]:hover {
 }
 
 #signup>div,
-#newSession>div {
+#newSession>div,
+#settings>div {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
