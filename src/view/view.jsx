@@ -1,4 +1,7 @@
 import { useState } from 'react';
+
+import { Toaster, toast } from 'sonner'
+
 // Import views
 import './glowView'
 // Import assets
@@ -166,7 +169,7 @@ function MainPanel({ newSession, onHide }) {
     </>
   );
 }
-function SidePanel({onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, settings }) {
+function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, settings }) {
   return (
     <>
       <aside className='box' >
@@ -175,24 +178,13 @@ function SidePanel({onRegister, onSubmit, loggedIn, logout, onNewSession, firstN
     </>
   );
 }
-function Notification({ message, type }) {
 
-  return (
-    <div id='notification' className={`${type} ${type ? 'show' : ''}`}>
-      <div>
-        <i className="icon icon-info"></i>
-        <p>{message}</p>
-      </div>
-    </div>
-  );
-}
 function TriathlonView({ controller }) {
   const userDetails = controller.HandleGettingUserDetails() // Gets user details
   const [showRegister, setShowRegister] = useState(false);
   const [newSession, setNewSession] = useState(false);
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem('LoggedIn') === 'true');
   const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : ""); // Trys to show users name 
-  const [notification, setNotification] = useState({ message: '', type: '' }); // State for notification
   const [changeSettings, setChangeSettings] = useState(false);
 
 
@@ -206,40 +198,32 @@ function TriathlonView({ controller }) {
     setChangeSettings(false);
   };
   const handleSignUp = (username, fName, lName) => {
-    controller.handleSignUp(username, fName, lName, showNotification, setShowRegister); // Pass showNotification
+    controller.handleSignUp(username, fName, lName, setShowRegister);
   };
   const handleSubmit = async (username) => {
-    controller.handleLogin(username, showNotification, setLoggedIn, setFirstName); // Pass showNotification
+    controller.handleLogin(username, setLoggedIn, setFirstName);
   };
   const handlelogout = () => {
-    controller.handleLogout(showNotification, setLoggedIn)
+    controller.handleLogout(setLoggedIn)
   }
   const handleChangeSettings = () => {
     setChangeSettings(true);
   }
 
-    const handleNewSession = () => {
+  const handleNewSession = () => {
     setNewSession(true);
   }
 
-  // Displays notifications
-  const showNotification = (message, type) => {
-    setNotification({ message, type });
-    // triggers notification to slide down
-    setTimeout(() => {
-      setNotification({ message, type: '' });
-    }, 8500);
-  };
-
   return (
     <>
-    {/* Popups */}
+      <Toaster richColors position="top-center" />
+
+      {/* Popups */}
       {changeSettings ? (<Settings onHide={handleHide} />) : null}
       {newSession ? (<NewSession onHide={handleHide} />) : null}
-      <Notification message={notification.message} type={notification.type} />
       {showRegister ? <Register onHide={handleHide} onSignUp={handleSignUp} /> : <></>}
 
-    {/* Main view */}
+      {/* Main view */}
       <SidePanel onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleNewSession} firstName={firstName} settings={handleChangeSettings} />
       {loggedIn ? (<MainPanel />) : null}
     </>
