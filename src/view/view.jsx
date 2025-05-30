@@ -99,8 +99,9 @@ function UserPage({ logout, onNewSession, firstName, settings }) {
     </div>
   );
 }
+// RunningForm Component
 function RunningForm({ onFormChange }) {
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [distance, setDistance] = useState('');
   const [duration, setDuration] = useState('');
   const [weather, setWeather] = useState('');
@@ -135,7 +136,6 @@ function RunningForm({ onFormChange }) {
       default:
         break;
     }
-
     // Send form data to parent component
     onFormChange({
       sport: 'running',
@@ -152,29 +152,28 @@ function RunningForm({ onFormChange }) {
   return (
     <>
       <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
-      <input type="number" id='newDistance' placeholder="Distance (km)" min="0" onChange={handleChange} />
-      <input type="number" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" onChange={handleChange} />
+      <input type="number" id='newDistance' placeholder="Distance (km)" min="0" value={distance} onChange={handleChange} />
+      <input type="number" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" value={duration} onChange={handleChange} />
       <div className='row'>
-        <select id="newWeather" name="newWeather" onChange={handleChange}>
-          <option value="" disabled selected>Weather Condition</option>
+        <select id="newWeather" name="newWeather" value={weather} onChange={handleChange}>
+          <option value="" disabled>Weather Condition</option>
           <option value="Sunny">Sunny</option>
           <option value="Overcast">Overcast</option>
           <option value="Rain">Rain</option>
           <option value="Misty">Misty</option>
           <option value="Stormy">Stormy</option>
         </select>
-        <input type="number" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" onChange={handleChange} />
+        <input type="number" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" value={airTemp} onChange={handleChange} />
       </div>
-      <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" onChange={handleChange} />
-      <input type="text" id="newShoes" name="newShoes" placeholder="Shoes Used" onChange={handleChange} />
+      <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" value={notes} onChange={handleChange} />
+      <input type="text" id="newShoes" name="newShoes" placeholder="Shoes Used" value={shoesUsed} onChange={handleChange} />
     </>
   );
 }
 
+// SwimmingForm Component
 function SwimmingForm({ onFormChange }) {
-
-  // (date, notes, lapLength, strokeType, lapTimes, waterTemperature)
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [lapLength, setLapLength] = useState('');
   const [waterTemp, setWaterTemp] = useState('');
   const [notes, setNotes] = useState('');
@@ -194,7 +193,7 @@ function SwimmingForm({ onFormChange }) {
         setWaterTemp(value);
         break;
       case 'newStroke':
-        setStroke(value)
+        setStroke(value);
         break;
       case 'newNotes':
         setNotes(value);
@@ -202,7 +201,6 @@ function SwimmingForm({ onFormChange }) {
       default:
         break;
     }
-
     // Send form data to parent component
     onFormChange({
       sport: 'swimming',
@@ -223,14 +221,14 @@ function SwimmingForm({ onFormChange }) {
     const newLapTimes = [...lapTimes];
     newLapTimes[index] = value;
     setLapTimes(newLapTimes);
-    handleChange({ target: { id: 'lapTimes', value: newLapTimes } }); // Trigger handleChange to update parent
+    // No need to call handleChange here.  The parent component
+    // will receive the updated lapTimes when the form is submitted.
   };
-
 
   return (
     <>
       <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
-      <input type="number" id='newLapLength' name='newLapLength' placeholder="Pool Length (meters)" min="0" onChange={handleChange} />
+      <input type="number" id='newLapLength' name='newLapLength' placeholder="Pool Length (meters)" min="0" value={lapLength} onChange={handleChange} />
       <div className='row'>
         <select id="newStroke" name="newStroke" value={strokeType} onChange={handleChange}>
           <option value="" disabled>Stroke Type</option>
@@ -241,24 +239,30 @@ function SwimmingForm({ onFormChange }) {
           <option value="Sidestroke">Sidestroke</option>
           <option value="Dog Paddle">Dog Paddle</option>
         </select>
-        <input type="number" id="newWaterTemp" name="newWaterTemp" placeholder="Water temperature (°C)" min="-10" max="50" onChange={handleChange} />
+        <input type="number" id="newWaterTemp" name="newWaterTemp" placeholder="Water temperature (°C)" min="-10" max="50" value={waterTemp} onChange={handleChange} />
       </div>
-      <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" onChange={handleChange} />
-      <div className='row'><div>
-        {lapTimes.map((lapTime, index) => (
-          <input
-            key={index}
-            type="number"
-            placeholder={`Lap Time ${index + 1} (seconds)`}
-            value={lapTime}
-            onChange={(e) => handleLapTimeChange(index, e.target.value)}
-          />
-        ))}</div>
-        <button type="button" onClick={addLapTime}>New Lap</button></div>
+      <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" value={notes} onChange={handleChange} />
+      <div className='row'>
+        <div>
+          {lapTimes.map((lapTime, index) => (
+            <input
+              key={index}
+              type="number"
+              placeholder={`Lap Time ${index + 1} (seconds)`}
+              value={lapTime}
+              onChange={(e) => handleLapTimeChange(index, e.target.value)}
+            />
+          ))}
+        </div>
+        <button type="button" onClick={addLapTime}>
+          New Lap
+        </button>
+      </div>
     </>
   );
 }
 
+// CyclingForm Component
 function CyclingForm({ onFormChange }) {
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [distance, setDistance] = useState('');
@@ -267,7 +271,7 @@ function CyclingForm({ onFormChange }) {
   const [airTemp, setAirTemp] = useState('');
   const [notes, setNotes] = useState('');
   const [bikeUsed, setBikeUsed] = useState('');
-  const [terrain, setTerrain] = useState('')
+  const [terrain, setTerrain] = useState('');
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -299,7 +303,6 @@ function CyclingForm({ onFormChange }) {
       default:
         break;
     }
-
     // Send form data to parent component
     onFormChange({
       sport: 'cycling',
@@ -314,17 +317,16 @@ function CyclingForm({ onFormChange }) {
     });
   };
 
-
   return (
     <>
       <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
       <div className='row'>
-        <input type="number" id='newDistance' placeholder="Distance (km)" min="0" onChange={handleChange} />
-        <input type="number" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" onChange={handleChange} />
+        <input type="number" id='newDistance' placeholder="Distance (km)" min="0" value={distance} onChange={handleChange} />
+        <input type="number" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" value={duration} onChange={handleChange} />
       </div>
       <div className='row'>
-        <select id="newTerrain" name="newTerrain" onChange={handleChange}>
-          <option value="" disabled selected>Terrain</option>
+        <select id="newTerrain" name="newTerrain" value={terrain} onChange={handleChange}>
+          <option value="" disabled>Terrain</option>
           <option disabled>--- Paved Surfaces ---</option>
           <option value="Flat Road">Flat Road</option>
           <option value="Rolling Hills">Rolling Hills</option>
@@ -340,11 +342,11 @@ function CyclingForm({ onFormChange }) {
           <option value="Cobblestone">Cobblestone</option>
           <option value="Mixed Terrain">Mixed Terrain</option>
         </select>
-        <input type="text" id="newBikeUsed" name="newBikeUsed" placeholder="Bike Used" onChange={handleChange} />
+        <input type="text" id="newBikeUsed" name="newBikeUsed" placeholder="Bike Used" value={bikeUsed} onChange={handleChange} />
       </div>
       <div className='row'>
-        <select id="newWeather" name="newWeather" onChange={handleChange}>
-          <option value="" disabled selected>Weather Condition</option>
+        <select id="newWeather" name="newWeather" value={weather} onChange={handleChange}>
+          <option value="" disabled>Weather Condition</option>
           <option value="Sunny">Sunny</option>
           <option value="Overcast">Overcast</option>
           <option value="Rain">Rain</option>
@@ -353,9 +355,9 @@ function CyclingForm({ onFormChange }) {
           <option value="Tailwind">Tailwind</option>
           <option value="Crosswind">Crosswind</option>
         </select>
-        <input type="number" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" onChange={handleChange} />
+        <input type="number" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" value={airTemp} onChange={handleChange} />
       </div>
-      <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" onChange={handleChange} />
+      <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" value={notes} onChange={handleChange} />
     </>
   );
 }

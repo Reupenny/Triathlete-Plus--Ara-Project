@@ -50,16 +50,18 @@ export class Database {
 
             // Handle errors when adding data
             request.onerror = (event) => {
+                console.error('Error adding data to IndexedDB:', event.target.error)
                 reject(new Error(`Failed to add data: ${event.target.error}`))
             }
 
             // Handle successful data addition
             request.onsuccess = (event) => {
+                console.log('Data added to IndexedDB successfully.')
                 resolve()
             }
         })
     }
-    // 
+    //
     //
     // Get Member or Training Session
     async getData(type, key) {

@@ -21,7 +21,14 @@ export class TrainingSession {
     }
 
     static generateSessionID() {
+        let localID = window.localStorage.getItem("lastSessionID");
+        let lastId = this.lastSessionID
+        if (lastId == 0 & localID) {
+            this.lastSessionID = localID
+        }
+
         this.lastSessionID++; // Increment last used ID
+        window.localStorage.setItem("lastSessionID", this.lastSessionID);
         return `S${String(this.lastSessionID).padStart(4, '0')}`;
     }
 
