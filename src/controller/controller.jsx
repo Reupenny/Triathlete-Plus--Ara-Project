@@ -64,36 +64,42 @@ class TriathlonController {
         }
     }
 
-    async handleNewSession(userName, fName, lName, setShowRegister) {
-        // Swimming Session
+    async handleNewSession(formData, setNewSession) {
         try {
-            await this.triathlonData.CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature)
-            console.log('User registered successfully');
-            toast.success('Session Created');// Shows notification
-            setShowRegister(false)
+            if (formData.sport === 'swimming') {
+                const parsedLapLength = parseFloat(formData.lapLength);
+                const parsedWaterTemp = parseFloat(formData.waterTemp);
+                const parsedLapTimes = formData.lapTimes.map(lapTime => parseFloat(lapTime));
+                console.log(formData.notes + formData.strokeType)
+                await this.triathlonData.CreateSwimmingSession(formData.date, formData.notes, parsedLapLength, formData.strokeType, parsedLapTimes, parsedWaterTemp)
+                console.log('Swimming session created successfully');
+                toast.success('Swimming Session Created');
+                setNewSession(false)
+            } else if (formData.sport === 'cycling') {
+                const { date, notes, distance, duration, terrain, bikeUsed, airTemp, weather, } = formData;
+                const parsedDistance = parseFloat(distance);
+                const parsedDuration = parseFloat(duration);
+                const parsedAirTemp = parseFloat(airTemp);
+                await this.triathlonData.CreateCyclingSession(date, notes, parsedDistance, parsedDuration, terrain, bikeUsed, parsedAirTemp, weather)
+                console.log('Cycling session created successfully');
+                toast.success('Cycling Session Created');
+                setNewSession(false)
+            } else if (formData.sport === 'running') {
+                const { date, notes, distance, duration, shoesUsed, weather, airTemp } = formData;
+                const parsedDistance = parseFloat(distance);
+                const parsedDuration = parseFloat(duration);
+                const parsedAirTemp = parseFloat(airTemp);
+                await this.triathlonData.CreateRunningSession(date, notes, parsedDistance, parsedDuration, shoesUsed, parsedAirTemp, weather);
+                console.log('Running session created successfully');
+                toast.success('Running Session Created');
+                setNewSession(false)
+            } else {
+                console.log('Invalid sport type');
+                toast.error('Invalid sport type');
+            }
         } catch (error) {
             console.error('Error creating session:', error);
-            toast.error(error.message);// Shows notification
-        }
-        // Cycling Session
-        try {
-            await this.triathlonData.CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition)
-            console.log('User registered successfully');
-            toast.success('Session Created');// Shows notification
-            setShowRegister(false)
-        } catch (error) {
-            console.error('Error creating session:', error);
-            toast.error(error.message);// Shows notification
-        }
-        // Running Session
-        try {
-            await this.triathlonData.CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition)
-            console.log('User registered successfully');
-            toast.success('Session Created');// Shows notification
-            setShowRegister(false)
-        } catch (error) {
-            console.error('Error creating session:', error);
-            toast.error(error.message);// Shows notification
+            toast.error(error.message);
         }
     }
 

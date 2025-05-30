@@ -200,6 +200,10 @@ button:hover {
     gap: .5em;
 }
 
+.row>div {
+    width: 100%;
+}
+
 #userPage {
     display: flex;
     flex-direction: column;
