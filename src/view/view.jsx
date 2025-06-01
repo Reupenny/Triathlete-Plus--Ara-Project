@@ -376,7 +376,6 @@ function NewSession({ onHide, controller, setNewSession }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form Data:", formData);
     if (selectedSport && controller && formData) {
       controller.handleNewSession(formData, setNewSession);
     }
@@ -406,7 +405,7 @@ function NewSession({ onHide, controller, setNewSession }) {
   );
 }
 
-function MainPanel({ newSession, onHide }) {
+function MainPanel({ controller }) {
   return (
     <>
 
@@ -453,7 +452,7 @@ function TriathlonView({ controller }) {
   const [showRegister, setShowRegister] = useState(false);
   const [newSession, setNewSession] = useState(false);
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem('LoggedIn') === 'true');
-  const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : ""); // Trys to show users name 
+  const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : ""); // Show users name
   const [changeSettings, setChangeSettings] = useState(false);
 
 
@@ -485,16 +484,17 @@ function TriathlonView({ controller }) {
 
   return (
     <>
+      {/* Toaster Notifications */}
       <Toaster richColors position="top-center" />
 
       {/* Popups */}
       {changeSettings ? (<Settings onHide={handleHide} />) : null}
       {newSession ? (<NewSession onHide={handleHide} controller={controller} setNewSession={setNewSession} />) : null}
-      {showRegister ? <Register onHide={handleHide} onSignUp={handleSignUp} /> : <></>}
+      {showRegister ? <Register onHide={handleHide} onSignUp={handleSignUp} /> : null}
 
       {/* Main view */}
       <SidePanel onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleNewSession} firstName={firstName} settings={handleChangeSettings} />
-      {loggedIn ? (<MainPanel />) : null}
+      {loggedIn ? (<MainPanel controller={controller} />) : null}
     </>
   );
 }
