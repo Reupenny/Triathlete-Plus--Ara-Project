@@ -12,6 +12,9 @@ class TriathlonController {
         } catch (error) {
             console.error('Error setting up:', error);
         }
+        this.findTrainingSessionByID = this.findTrainingSessionByID.bind(this);
+        this.editTrainingSession = this.editTrainingSession.bind(this);
+        this.HandleGettingUserDetails = this.HandleGettingUserDetails.bind(this);
     }
 
     async getAllTrainingSessions() {
@@ -120,6 +123,38 @@ class TriathlonController {
         }
     }
 
+    async findTrainingSessionByID(sessionID) {
+        try {
+            const sessionData = await this.triathlonData.findTrainingSessionByID(sessionID);
+            return sessionData;
+        } catch (error) {
+            console.error('Error finding training session:', error);
+            toast.error(error.message);
+            return null;
+        }
+    }
+
+    async editTrainingSession(sessionID, updatedSession, setNewSession) {
+        try {
+            await this.triathlonData.editTrainingSession(sessionID, updatedSession);
+            console.log('Training session edited successfully');
+            toast.success('Training session edited successfully');
+            setNewSession(false)
+        } catch (error) {
+            console.error('Error editing training session:', error);
+            toast.error(error.message);
+        }
+    }
+    async deleteTrainingSession(sessionID) {
+        try {
+            await this.triathlonData.deleteTrainingSession(sessionID)
+            console.log('Training session deleted successfully');
+            toast.success('Training session deleted successfully');
+        } catch (error) {
+            console.error('Error deleting training session:', error);
+            toast.error(error.message);
+        }
+    }
 }
 
 export default TriathlonController

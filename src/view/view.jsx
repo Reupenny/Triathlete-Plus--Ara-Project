@@ -80,6 +80,82 @@ function Settings({ onHide }) {
     </>
   );
 }
+
+
+function ViewSession({ onHide, session }) {
+  const member = session.memberID
+  return (
+    <>
+      <div id="hide" onClick={onHide}></div>
+      <div className="box" id="settings">
+        <div>
+          <h2 className={session.sportType + ' sport-type'}><i className={'icon icon-' + session.sportType}></i> {session.sportType}</h2>
+          <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
+        </div>
+        <div className='dataView'>
+          <div className="distance-duration-visual">
+            {Array.isArray(session.lapTimes) && (
+              <>
+                {session.lapTimes.map((lapTime, lapIndex) => (
+                  <div key={lapIndex}>
+                    <div
+                      className="lap-dot"
+                      style={{ left: `${(lapIndex + 1) * (100 / session.lapTimes.length)}%` }}
+                    ></div>
+                    <div
+                      className="lap-time-label"
+                      style={{ left: `${(lapIndex + 1) * (100 / session.lapTimes.length)}%` }}
+                    >{lapTime + 's'}</div>
+                  </div>
+                ))}
+                <div className="end-dot"></div>
+                <span className='end-label'>{session.duration % 1 === 0 ? session.duration : session.duration.toFixed(2)}min</span>
+                <span className="distance-label">{`${session.distance}m / ${session.lapLength}m laps`}</span>
+              </>
+            )}
+            {!Array.isArray(session.lapTimes) && (
+              <>
+                <div className="start-dot"></div>
+                <div className="end-dot" style={{ left: `100%` }}></div>
+                <span className='end-label'>{session.duration % 1 === 0 ? session.duration : session.duration.toFixed(2)}min</span>
+                <span className="distance-label">{`${(session.distance)} Km`}</span>
+              </>
+            )}
+
+          </div></div><br />
+
+        {session.sportType === 'Swimming' ? (
+          <>
+            <h4>Pool Length: </h4> <p>{session.lapLength + "m"}</p><br />
+            <h4>Laps: </h4> <p>{session.laps}</p><br />
+            <h4>Total Distance: </h4> <p>{session.duration}</p><br />
+          </>
+        ) : session.sportType === 'Running' ? (
+          <>
+            <p>Shoes Used: {session.shoesUsed}</p>
+            <p>Route: {session.route}</p>
+          </>
+        ) : session.sportType === 'Cycling' ? (
+          <>
+            <p>Bike Used: {session.bikeUsed}</p>
+            <p>Terrain: {session.terrain}</p>
+          </>
+        ) : (
+          // Optional: What to render if sport doesn't match any of the above
+          <p>Sport details not available or unknown sport type.</p>
+        )}
+        <p>{"Session ID: " + session.sessionID}</p>
+        <p>{"Member ID: " + member.memberID}</p><br />
+        <h4>Date of session:</h4> <p>{session.date}</p><br />
+        <h4>Notes:</h4> <p>{session.notes}</p>
+        <br />
+
+        <i className='icon icon-edit' onClick={() => handleEdit(session)}></i>
+        <i className='icon icon-trash' onClick={() => handleDelete(session.sessionID)}></i>
+      </div>
+    </>
+  );
+}
 function UserPage({ logout, onNewSession, firstName, settings }) {
   return (
     <div id='userPage'>
@@ -104,14 +180,15 @@ function UserPage({ logout, onNewSession, firstName, settings }) {
   );
 }
 // RunningForm Component
-function RunningForm({ onFormChange }) {
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [distance, setDistance] = useState('');
-  const [duration, setDuration] = useState('');
-  const [weather, setWeather] = useState('');
-  const [airTemp, setAirTemp] = useState('');
-  const [notes, setNotes] = useState('');
-  const [shoesUsed, setShoesUsed] = useState('');
+function RunningForm({ onFormChange, formData }) {
+  const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'));
+  const [distance, setDistance] = useState(formData?.distance || '');
+  const [duration, setDuration] = useState(formData?.duration || '');
+  const [weather, setWeather] = useState(formData?.weatherCondition || '');
+  const [airTemp, setAirTemp] = useState(formData?.airTemperature || '');
+  const [notes, setNotes] = useState(formData?.notes || '');
+  const [shoesUsed, setShoesUsed] = useState(formData?.shoesUsed || '');
+  const member = formData?.memberID || null
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -155,9 +232,17 @@ function RunningForm({ onFormChange }) {
 
   return (
     <>
+      {formData ? (
+        // What to render if formData is true
+        <>
+          <p>{"Session ID: " + formData.sessionID}</p>
+          <p>{"Member ID: " + member.memberID}</p><br />
+        </>
+      ) : (<></>)
+      }
       <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
-      <input type="number" id='newDistance' placeholder="Distance (km)" min="0" value={distance} onChange={handleChange} />
-      <input type="number" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" value={duration} onChange={handleChange} />
+      <input type="number" step="0.01" id='newDistance' placeholder="Distance (km)" min="0" value={distance} onChange={handleChange} />
+      <input type="number" step="0.01" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" value={duration} onChange={handleChange} />
       <div className='row'>
         <select id="newWeather" name="newWeather" value={weather} onChange={handleChange}>
           <option value="" disabled>Weather Condition</option>
@@ -167,7 +252,7 @@ function RunningForm({ onFormChange }) {
           <option value="Misty">Misty</option>
           <option value="Stormy">Stormy</option>
         </select>
-        <input type="number" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" value={airTemp} onChange={handleChange} />
+        <input type="number" step="0.1" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" value={airTemp} onChange={handleChange} />
       </div>
       <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" value={notes} onChange={handleChange} />
       <input type="text" id="newShoes" name="newShoes" placeholder="Shoes Used" value={shoesUsed} onChange={handleChange} />
@@ -176,14 +261,14 @@ function RunningForm({ onFormChange }) {
 }
 
 // SwimmingForm Component
-function SwimmingForm({ onFormChange }) {
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [lapLength, setLapLength] = useState('');
-  const [waterTemp, setWaterTemp] = useState('');
-  const [notes, setNotes] = useState('');
-  const [strokeType, setStroke] = useState('Freestyle');
-  const [lapTimes, setLapTimes] = useState(['']);
-
+function SwimmingForm({ onFormChange, formData }) {
+  const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'));
+  const [lapLength, setLapLength] = useState(formData?.lapLength || '');
+  const [waterTemp, setWaterTemp] = useState(formData?.waterTemperature || '');
+  const [notes, setNotes] = useState(formData?.notes || '');
+  const [strokeType, setStroke] = useState(formData?.strokeType || 'Freestyle');
+  const [lapTimes, setLapTimes] = useState(formData?.lapTimes || ['']);
+  const member = formData?.memberID || null
   const handleChange = (e) => {
     const { id, value } = e.target;
     switch (id) {
@@ -225,14 +310,20 @@ function SwimmingForm({ onFormChange }) {
     const newLapTimes = [...lapTimes];
     newLapTimes[index] = value;
     setLapTimes(newLapTimes);
-    // No need to call handleChange here.  The parent component
-    // will receive the updated lapTimes when the form is submitted.
   };
 
   return (
     <>
+      {formData ? (
+        // What to render if formData is true
+        <>
+          <p>{"Session ID: " + formData.sessionID}</p>
+          <p>{"Member ID: " + member.memberID}</p><br />
+        </>
+      ) : (<></>)
+      }
       <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
-      <input type="number" id='newLapLength' name='newLapLength' placeholder="Pool Length (meters)" min="0" value={lapLength} onChange={handleChange} />
+      <input type="number" step="0.01" id='newLapLength' name='newLapLength' placeholder="Pool Length (meters)" min="0" value={lapLength} onChange={handleChange} />
       <div className='row'>
         <select id="newStroke" name="newStroke" value={strokeType} onChange={handleChange}>
           <option value="" disabled>Stroke Type</option>
@@ -243,7 +334,7 @@ function SwimmingForm({ onFormChange }) {
           <option value="Sidestroke">Sidestroke</option>
           <option value="Dog Paddle">Dog Paddle</option>
         </select>
-        <input type="number" id="newWaterTemp" name="newWaterTemp" placeholder="Water temperature (°C)" min="-10" max="50" value={waterTemp} onChange={handleChange} />
+        <input type="number" step="0.1" id="newWaterTemp" name="newWaterTemp" placeholder="Water temperature (°C)" min="-10" max="50" value={waterTemp} onChange={handleChange} />
       </div>
       <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" value={notes} onChange={handleChange} />
       <div className='row'>
@@ -266,15 +357,18 @@ function SwimmingForm({ onFormChange }) {
 }
 
 // CyclingForm Component
-function CyclingForm({ onFormChange }) {
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [distance, setDistance] = useState('');
-  const [duration, setDuration] = useState('');
-  const [weather, setWeather] = useState('');
-  const [airTemp, setAirTemp] = useState('');
-  const [notes, setNotes] = useState('');
-  const [bikeUsed, setBikeUsed] = useState('');
-  const [terrain, setTerrain] = useState('');
+function CyclingForm({ onFormChange, formData }) {
+  const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'));
+  const [distance, setDistance] = useState(formData?.distance || '');
+  const [duration, setDuration] = useState(formData?.duration || '');
+  const [weather, setWeather] = useState(formData?.weatherCondition || '');
+  const [airTemp, setAirTemp] = useState(formData?.airTemperature || '');
+  const [notes, setNotes] = useState(formData?.notes || '');
+  const [bikeUsed, setBikeUsed] = useState(formData?.bikeUsed || '');
+  const [terrain, setTerrain] = useState(formData?.terrain || '');
+
+  const member = formData?.memberID || null
+  console.log(formData)
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -322,10 +416,18 @@ function CyclingForm({ onFormChange }) {
 
   return (
     <>
+      {formData ? (
+        // What to render if formData is true
+        <>
+          <p>{"Session ID: " + formData.sessionID}</p>
+          <p>{"Member ID: " + member.memberID}</p><br />
+        </>
+      ) : (<></>)
+      }
       <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
       <div className='row'>
-        <input type="number" id='newDistance' placeholder="Distance (km)" min="0" value={distance} onChange={handleChange} />
-        <input type="number" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" value={duration} onChange={handleChange} />
+        <input type="number" step="0.01" id='newDistance' placeholder="Distance (km)" min="0" value={distance} onChange={handleChange} />
+        <input type="number" step="0.01" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" value={duration} onChange={handleChange} />
       </div>
       <div className='row'>
         <select id="newTerrain" name="newTerrain" value={terrain} onChange={handleChange}>
@@ -358,28 +460,47 @@ function CyclingForm({ onFormChange }) {
           <option value="Tailwind">Tailwind</option>
           <option value="Crosswind">Crosswind</option>
         </select>
-        <input type="number" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" value={airTemp} onChange={handleChange} />
+        <input type="number" step="0.1" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" value={airTemp} onChange={handleChange} />
       </div>
       <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" value={notes} onChange={handleChange} />
     </>
   );
 }
 
-function NewSession({ onHide, controller, setNewSession, session }) {
+function NewSession({ onHide, controller, setNewSession, session, sessionData }) {
   const [selectedSport, setSelectedSport] = useState(session);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState(sessionData || {});
+  console.log("Session: " + session)
+  console.log(sessionData)
 
-  // const handleSportClick = (sport) => {
-  //   setSelectedSport(setNewSession);
-  // };
+  useEffect(() => {
+    if (sessionData && sessionData.sessionID && session == true) {
+      console.log("EDITING")
+      // EDITING MODE: sessionData is present and has a sessionID
+      setSelectedSport(sessionData.sportType.toLowerCase());
+      setFormData({ sessionData }); // Populate formData with a copy of sessionData
+    } else {
+      console.log("NEW")
+      // NEW SESSION MODE: sessionData is null or doesn't indicate an existing session
+      setSelectedSport(session);
+      setFormData({}); // Initialize for new, include default date
+    }
+  }, [session, sessionData]); // Re-run this effect if 'session' or 'sessionData' props change
 
-  const handleFormChange = (data) => {
-    setFormData(data);
-  };
+  const handleFormChange = (dataFromChildForm) => {
+    setFormData(prevData => ({
+      ...prevData, // Keep existing data (like sessionID if editing)
+      ...dataFromChildForm // Overwrite with new data from the specific sport form
+    }))
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (selectedSport && controller && formData) {
+    if (sessionData) {
+      // Editing existing session
+      controller.editTrainingSession(sessionData.sessionID, formData, setNewSession);
+    } else {
+      // Creating a new session
       controller.handleNewSession(formData, setNewSession);
     }
   };
@@ -389,21 +510,21 @@ function NewSession({ onHide, controller, setNewSession, session }) {
       <div id="hide" onClick={onHide}></div>
       <div className="box" id="newSession">
         <div>
-          <h2>New Session</h2>
+          <h2>{sessionData ? 'Edit ' + sessionData.sportType + ' Session' : 'New ' + session + ' Session'}</h2>
           <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
         </div>
         <form id='newSessionForm' onSubmit={handleSubmit}>
-          {selectedSport === 'running' && <RunningForm onFormChange={handleFormChange} />}
-          {selectedSport === 'swimming' && <SwimmingForm onFormChange={handleFormChange} />}
-          {selectedSport === 'cycling' && <CyclingForm onFormChange={handleFormChange} />}
-          <input type="submit" value="Submit" id='register-btn' />
+          {selectedSport === 'running' && <RunningForm onFormChange={handleFormChange} formData={sessionData} />}
+          {selectedSport === 'swimming' && <SwimmingForm onFormChange={handleFormChange} formData={sessionData} />}
+          {selectedSport === 'cycling' && <CyclingForm onFormChange={handleFormChange} formData={sessionData} />}
+          <input type="submit" value={sessionData ? 'Save ' : 'Submit'} id='register-btn' />
         </form>
       </div>
     </>
   );
 }
 
-function MainPanel({ controller }) {
+function MainPanel({ controller, onEditSession, onViewSession }) {
   const [trainingSessions, setTrainingSessions] = useState([]);
   const [sortBy, setSortBy] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
@@ -443,6 +564,17 @@ function MainPanel({ controller }) {
       setSortDirection('asc');
     }
   };
+
+  const handleEdit = (session) => {
+    onEditSession(session); // Call the passed prop to open modal in TriathlonView
+  };
+  const handleDelete = (sessionID) => {
+    controller.deleteTrainingSession(sessionID)
+  }
+  const handleView = (session) => {
+    onViewSession(session)
+    // controller.deleteTrainingSession(session)
+  }
 
   return (
     <>
@@ -505,9 +637,9 @@ function MainPanel({ controller }) {
                       </div>
                     </td>
                     <td className="more-cell">
-                      <i className='icon icon-info'></i>
-                      <i className='icon icon-edit'></i>
-                      <i className='icon icon-trash'></i>
+                      <i className='icon icon-info' onClick={() => handleView(entry)}></i>
+                      <i className='icon icon-edit' onClick={() => handleEdit(entry)}></i>
+                      <i className='icon icon-trash' onClick={() => handleDelete(entry.sessionID)}></i>
                     </td>
                   </tr>
                 );
@@ -539,6 +671,8 @@ function TriathlonView({ controller }) {
   const userDetails = controller.HandleGettingUserDetails() // Gets user details
   const [showRegister, setShowRegister] = useState(false);
   const [newSession, setNewSession] = useState(false);
+  const [viewSessionData, setViewSession] = useState(null);
+  const [newSessionData, setNewSessionData] = useState(null);
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem('LoggedIn') === 'true');
   const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : ""); // Show users name
   const [changeSettings, setChangeSettings] = useState(false);
@@ -552,6 +686,7 @@ function TriathlonView({ controller }) {
     setShowRegister(false);
     setNewSession(false);
     setChangeSettings(false);
+    setViewSession(null)
   };
   const handleSignUp = (username, fName, lName) => {
     controller.handleSignUp(username, fName, lName, setShowRegister);
@@ -566,9 +701,21 @@ function TriathlonView({ controller }) {
     setChangeSettings(true);
   }
 
-  const handleNewSession = (sessionType) => {
-    setNewSession(sessionType);
-    console.log(sessionType)
+
+  // For opening NewSession in 'new' mode
+  const handleOpenNewSessionModal = (sessionType) => {
+    setNewSessionData(null); // Clears data if there is any
+    setNewSession(sessionType); // e.g., 'running'
+  };
+
+  // For opening NewSession in 'edit' mode
+  const handleOpenEditModal = (sessionData) => {
+    setNewSessionData(sessionData); // The full session object
+    setNewSession(true); // e.g., 'running'
+  };
+
+  const handleViewSession = (session) => {
+    setViewSession(session)
   }
 
   return (
@@ -578,12 +725,13 @@ function TriathlonView({ controller }) {
 
       {/* Popups */}
       {changeSettings ? (<Settings onHide={handleHide} />) : null}
-      {newSession ? (<NewSession onHide={handleHide} controller={controller} setNewSession={setNewSession} session={newSession} />) : null}
+      {newSession ? (<NewSession onHide={handleHide} controller={controller} setNewSession={setNewSession} session={newSession} sessionData={newSessionData} />) : null}
       {showRegister ? <Register onHide={handleHide} onSignUp={handleSignUp} /> : null}
+      {viewSessionData ? (<ViewSession session={viewSessionData} onHide={handleHide} />) : null}
 
       {/* Main view */}
-      <SidePanel onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleNewSession} firstName={firstName} settings={handleChangeSettings} />
-      {loggedIn ? (<MainPanel controller={controller} />) : null}
+      <SidePanel onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleOpenNewSessionModal} firstName={firstName} settings={handleChangeSettings} />
+      {loggedIn ? (<MainPanel controller={controller} onEditSession={handleOpenEditModal} onViewSession={handleViewSession} />) : null}
     </>
   );
 }
