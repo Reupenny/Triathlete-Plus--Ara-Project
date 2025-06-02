@@ -65,6 +65,7 @@ export class TriathlonData {
             const newSession = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
 
             const distance = newSession.getTotalDistance();
+            const duration = newSession.getTotalDuration()
             const sessionData = {
                 sessionID: newSession.sessionID,
                 memberID: newSession.memberID,
@@ -76,7 +77,8 @@ export class TriathlonData {
                 laps: newSession.laps,
                 lapTimes: newSession.lapTimes,
                 waterTemperature: newSession.waterTemperature,
-                distance: distance
+                distance: distance,
+                duration: duration
             };
             await TriathlonData.database.addData("TrainingSessions", sessionData);
             return newSession;
@@ -432,5 +434,9 @@ export class TriathlonData {
             // Handle potential database errors during addData
             throw new Error(`Failed to restore session ${sessionID}: ${error.message}`);
         }
+    }
+
+    async getAllTrainingSessions() {
+        return await TriathlonData.database.getAllData("TrainingSessions");
     }
 }

@@ -6,13 +6,13 @@ Generated using nucleoapp.com
 -------------------------------- */
 
 @font-face {
-  font-family: 'Icons';
-  src: url('../fonts/Icons.eot');
-  src: url('../fonts/Icons.eot') format('embedded-opentype'),
-    url('../fonts/Icons.woff2') format('woff2'),
-    url('../fonts/Icons.woff') format('woff'),
-    url('../fonts/Icons.ttf') format('truetype'),
-    url('../fonts/Icons.svg') format('svg');
+  font-family: 'icons';
+  src: url('../fonts/icons.eot');
+  src: url('../fonts/icons.eot') format('embedded-opentype'),
+    url('../fonts/icons.woff2') format('woff2'),
+    url('../fonts/icons.woff') format('woff'),
+    url('../fonts/icons.ttf') format('truetype'),
+    url('../fonts/icons.svg') format('svg');
 }
 
 /* base class */
@@ -27,23 +27,19 @@ Generated using nucleoapp.com
 }
 
 /* icons */
-.icon-edit::before {
-  content: "\ea02";
-}
-
-.icon-trash::before {
+.icon-info::before {
   content: "\ea03";
 }
 
-.icon-return::before {
+.icon-settings::before {
   content: "\ea04";
 }
 
-.icon-double-checkmark::before {
+.icon-close::before {
   content: "\ea05";
 }
 
-.icon-checkmark::before {
+.icon-add::before {
   content: "\ea06";
 }
 
@@ -51,26 +47,67 @@ Generated using nucleoapp.com
   content: "\ea07";
 }
 
-.icon-add::before {
+.icon-checkmark::before {
   content: "\ea08";
 }
 
-.icon-close::before {
+.icon-double-checkmark::before {
   content: "\ea09";
 }
 
-.icon-settings::before {
+.icon-return::before {
   content: "\ea0a";
 }
 
-.icon-info::before {
+.icon-trash::before {
   content: "\ea0b";
+}
+
+.icon-edit::before {
+  content: "\ea0c";
+}
+
+.icon-Swimming::before {
+  content: "\ea0d";
+}
+
+.icon-Running::before {
+  content: "\ea0e";
+}
+
+.icon-Cycling::before {
+  content: "\ea0f";
 }
 
 
 
-/* Hover */
+/* Transitions & additional settings */
 
 .icon-settings:hover {
   transform: rotate(45deg);
+}
+
+.icon-add {
+  padding-bottom: 10px;
+}
+
+.icon-add:hover {
+  color: var(--blue);
+  transform: scale(1.1);
+}
+
+
+.icon-trash:hover {
+  color: var(--pink);
+  transform: scale(1.1);
+}
+
+.icon-edit:hover {
+  color: var(--blue);
+  transform: scale(1.1);
+}
+
+.icon-info:hover {
+  color: var(--blue);
+  transform: scale(1.1);
 }

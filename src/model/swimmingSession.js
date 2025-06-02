@@ -15,11 +15,11 @@ export class SwimmingSession extends TrainingSession {
 
     getTotalDistance() {
         // Calculates the total length of swimming in Km
-        return (this.lapLength * this.laps) / 100;
+        return (this.lapLength * this.laps);
     }
 
     getTotalDuration() {
         // Calculates total time swimming 
-        return this.lapTimes.reduce((sum, time) => sum + time, 0);
+        return this.lapTimes.reduce((sum, time) => sum + time, 0) / 60;
     }
 }

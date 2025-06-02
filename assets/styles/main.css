@@ -19,52 +19,41 @@
     --orange-light: #ffc9a7;
 
     --black: #333;
+    --grey: #dadada;
 }
 
 /* Colours */
-.orange {
-    border-color: var(--orange);
+.orange,
+.Cycling {
     color: var(--orange);
 }
 
-.orange-light {
-    border-color: var(--orange-light);
-    color: var(--orange-light);
+.orange:hover {
+    background-color: var(--orange);
+    color: white;
+    border-color: var(--orange);
 }
 
-.orange-dark {
-    border-color: var(--orange-dark);
-    color: var(--orange-dark);
-}
-
-.blue {
-    border-color: var(--blue);
+.blue,
+.Swimming {
     color: var(--blue);
 }
 
-.blue-light {
-    border-color: var(--blue-light);
-    color: var(--blue-light);
+.blue:hover {
+    background-color: var(--blue);
+    color: white;
+    border-color: var(--blue);
 }
 
-.blue-dark {
-    border-color: var(--blue-dark);
-    color: var(--blue-dark);
-}
-
-.pink {
-    border-color: var(--pink);
+.pink,
+.Running {
     color: var(--pink);
 }
 
-.pink-light {
-    border-color: var(--pink-light);
-    color: var(--pink-light);
-}
-
-.pink-dark {
-    border-color: var(--pink-dark);
-    color: var(--pink-dark);
+.pink:hover {
+    background-color: var(--pink);
+    color: white;
+    border-color: var(--pink);
 }
 
 .yellow {
@@ -72,15 +61,7 @@
     color: var(--yellow);
 }
 
-.yellow-light {
-    border-color: var(--yellow-light);
-    color: var(--yellow-light);
-}
 
-.yellow-dark {
-    border-color: var(--yellow-dark);
-    color: var(--yellow-dark);
-}
 
 
 /* Global reset */
@@ -352,6 +333,7 @@ input[type="submit"]:hover {
     transform: translate(-50%, -50%);
     max-width: 400px;
     min-width: 300px;
+    width: 100%;
     z-index: 2000;
 }
 
@@ -376,6 +358,161 @@ input[type="submit"]:hover {
 #login>div {
     width: 100%;
 }
+
+
+
+
+
+
+
+/* Table Data */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+    /* background-color: #fff; */
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+th,
+td {
+    height: 40px;
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+tbody tr:hover {
+    background-color: #f0f8ff;
+}
+
+
+/* Responsive Design (Media Query) */
+@media (max-width: 768px) {
+    table {
+        overflow-x: auto;
+    }
+
+    th,
+    td {
+        padding: 10px;
+        font-size: 0.9em;
+    }
+
+    th {
+        white-space: nowrap;
+    }
+}
+
+/* "More" Column Styling */
+.more-cell {
+    align-items: center;
+    display: flex;
+    gap: .5em;
+    justify-content: center;
+}
+
+/* Distance & Duration Visual - General Styling */
+.distance-duration-visual {
+    position: relative;
+    width: 100%;
+    /* Occupy the full width of the cell */
+    height: 20px;
+    /* Adjust height as needed */
+}
+
+/* Line (Horizontal) */
+.distance-duration-visual::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    height: 2px;
+    background-color: var(--grey);
+}
+
+/* Dots (Swimming Laps) */
+.lap-dot {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background-color: var(--blue);
+    border-radius: 50%;
+    /* Add transition for smoother movement */
+    transition: left 0.3s ease;
+}
+
+/* Dot labels */
+.lap-time-label {
+    position: absolute;
+    top: calc(50% + 15px);
+    /* Position below the dot */
+    left: 0;
+    transform: translateX(-20%);
+    /* Center the text */
+    font-size: 0.8em;
+    white-space: nowrap;
+    /* Ensure the label takes the full width */
+    text-align: center;
+    /* Center the text within the label */
+}
+
+/* Start/End Dot (Running/Cycling & Swimming) */
+.end-dot,
+.start-dot {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background-color: var(--blue);
+    border-radius: 50%;
+}
+
+.end-label {
+    position: absolute;
+    /* top: -10px; */
+    right: 0;
+    /* Position label to the right */
+    font-size: 0.8em;
+    white-space: nowrap;
+    transform: translateX(150%);
+}
+
+/* Distance Label */
+.distance-label {
+    position: absolute;
+    top: -10px;
+    /* Adjust as needed to align */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8em;
+    white-space: nowrap;
+    text-align: center;
+    /* Center the text */
+}
+
+.sport-type {
+    align-items: center;
+    display: flex;
+    gap: .5em;
+    justify-content: flex-start;
+
+}
+
 
 @media screen and (min-width: 62em) {
     #root {

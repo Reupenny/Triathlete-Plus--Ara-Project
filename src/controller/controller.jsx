@@ -14,6 +14,23 @@ class TriathlonController {
         }
     }
 
+    async getAllTrainingSessions() {
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions();
+        return trainingSessions;
+    }
+
+    async sortTrainingSessionsByDate(trainingSessions) {
+        return await this.triathlonData.sortTrainingSessionsByDate(trainingSessions);
+    }
+
+    async sortTrainingSessionsBySportType(trainingSessions) {
+        return await this.triathlonData.sortTrainingSessionsBySportType(trainingSessions);
+    }
+
+    async sortTrainingSessionsByDistance(trainingSessions) {
+        return await this.triathlonData.sortTrainingSessionsByDistance(trainingSessions);
+    }
+
     async handleLogin(username, setLoggedIn, setFirstName) {
         try {
             const loginResult = await this.member.login(username);

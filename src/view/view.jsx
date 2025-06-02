@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Toaster, toast } from 'sonner'
 import { format } from 'date-fns';
@@ -85,8 +85,12 @@ function UserPage({ logout, onNewSession, firstName, settings }) {
     <div id='userPage'>
       <div>
         <img className='logo' src={Logo} alt="Triathlete plus logo" />
-        <p>User</p>
-        <button onClick={onNewSession}>New Session</button>
+        <br />
+        <br />
+        <p>Create a new training session</p>
+        <button className='pink' id='running' onClick={() => onNewSession('running')}>Running</button>
+        <button className='blue' id='swimming' onClick={() => onNewSession('swimming')}>Swimming</button>
+        <button className='orange' id='cycling' onClick={() => onNewSession('cycling')}>Cycling</button>
         <form>
           <input type="text" id="searchSessions" placeholder="Search training sessions" />
         </form>
@@ -254,9 +258,8 @@ function SwimmingForm({ onFormChange }) {
             />
           ))}
         </div>
-        <button type="button" onClick={addLapTime}>
-          New Lap
-        </button>
+        <i onClick={addLapTime} className='icon icon-add'></i>
+        <i onClick={addLapTime} className='icon icon-minus'></i>
       </div>
     </>
   );
@@ -362,13 +365,13 @@ function CyclingForm({ onFormChange }) {
   );
 }
 
-function NewSession({ onHide, controller, setNewSession }) {
-  const [selectedSport, setSelectedSport] = useState('');
+function NewSession({ onHide, controller, setNewSession, session }) {
+  const [selectedSport, setSelectedSport] = useState(session);
   const [formData, setFormData] = useState({});
 
-  const handleSportClick = (sport) => {
-    setSelectedSport(sport);
-  };
+  // const handleSportClick = (sport) => {
+  //   setSelectedSport(setNewSession);
+  // };
 
   const handleFormChange = (data) => {
     setFormData(data);
@@ -389,11 +392,6 @@ function NewSession({ onHide, controller, setNewSession }) {
           <h2>New Session</h2>
           <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
         </div>
-        <div>
-          <button id='running' onClick={() => handleSportClick('running')}>Running</button>
-          <button id='swimming' onClick={() => handleSportClick('swimming')}>Swimming</button>
-          <button id='cycling' onClick={() => handleSportClick('cycling')}>Cycling</button>
-        </div>
         <form id='newSessionForm' onSubmit={handleSubmit}>
           {selectedSport === 'running' && <RunningForm onFormChange={handleFormChange} />}
           {selectedSport === 'swimming' && <SwimmingForm onFormChange={handleFormChange} />}
@@ -406,25 +404,114 @@ function NewSession({ onHide, controller, setNewSession }) {
 }
 
 function MainPanel({ controller }) {
+  const [trainingSessions, setTrainingSessions] = useState([]);
+  const [sortBy, setSortBy] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+
+  useEffect(() => {
+    const fetchTrainingSessions = async () => {
+      let sessions = await controller.getAllTrainingSessions();
+      if (sortBy) {
+        switch (sortBy) {
+          case 'date':
+            sessions = await controller.sortTrainingSessionsByDate(sessions);
+            break;
+          case 'sport':
+            sessions = await controller.sortTrainingSessionsBySportType(sessions);
+            break;
+          case 'distance':
+            sessions = await controller.sortTrainingSessionsByDistance(sessions);
+            break;
+          default:
+            break;
+        }
+        if (sortDirection === 'desc') {
+          sessions = sessions.reverse();
+        }
+      }
+      setTrainingSessions(sessions);
+    };
+
+    fetchTrainingSessions();
+  }, [controller, sortBy, sortDirection]);
+
+  const handleSort = (type) => {
+    if (sortBy === type) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(type);
+      setSortDirection('asc');
+    }
+  };
+
   return (
     <>
-
       <main>
         <div className='box' >
           <div>
             <h2>Training Sessions</h2>
-            <div className='row'> <h3>Sort by: </h3> <button>Date</button><button>Type</button><button>Distance</button></div>
+            <div className='row'> <h3>Sort by: </h3>
+              <button onClick={() => handleSort('date')}>Date</button>
+              <button onClick={() => handleSort('sport')}>Type</button>
+              <button onClick={() => handleSort('distance')}>Distance</button>
+            </div>
           </div>
           <table>
             <thead>
               <tr>
-                <td>Table Head</td>
+                <th>Sport</th>
+                <th>Date</th>
+                <th>Distance & Duration</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Table Data</td>
-              </tr>
+              {trainingSessions.map((entry, index) => {
+                // const visualData = getVisualDataForEntry(entry);
+                return (
+                  <tr key={index} data-sport={entry.sportType}>
+                    <td className={entry.sportType + ' sport-type'}><i className={'icon icon-' + entry.sportType}></i> {entry.sportType}</td>
+                    <td>{entry.date}</td>
+                    <td>
+                      <div className="distance-duration-visual">
+                        {Array.isArray(entry.lapTimes) && (
+                          <>
+                            {entry.lapTimes.map((lapTime, lapIndex) => (
+                              <div key={lapIndex}>
+                                <div
+                                  // key={`lap-dot-${lapIndex}`}
+                                  className="lap-dot"
+                                  style={{ left: `${(lapIndex + 1) * (100 / entry.lapTimes.length)}%` }}
+                                ></div>
+                                <div
+                                  // key={`lap-time-${lapIndex}`}
+                                  className="lap-time-label"
+                                  style={{ left: `${(lapIndex + 1) * (100 / entry.lapTimes.length)}%` }}
+                                >{lapTime + 's'}</div>
+                              </div>
+                            ))}
+                            <div className="end-dot"></div>
+                            <span className="distance-label">{`${entry.distance}m / ${entry.lapLength}m laps`}</span>
+                          </>
+                        )}
+                        {!Array.isArray(entry.lapTimes) && (
+                          <>
+                            <div className="start-dot"></div>
+                            <div className="end-dot" style={{ left: `100%` }}></div>
+                            <span className="distance-label">{`${(entry.distance)} Km`}</span>
+                          </>
+                        )}
+                        <span className='end-label'>{entry.duration % 1 === 0 ? entry.duration : entry.duration.toFixed(2)}min</span>
+                      </div>
+                    </td>
+                    <td className="more-cell">
+                      <i className='icon icon-info'></i>
+                      <i className='icon icon-edit'></i>
+                      <i className='icon icon-trash'></i>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -437,6 +524,7 @@ function MainPanel({ controller }) {
     </>
   );
 }
+
 function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, settings }) {
   return (
     <>
@@ -478,8 +566,9 @@ function TriathlonView({ controller }) {
     setChangeSettings(true);
   }
 
-  const handleNewSession = () => {
-    setNewSession(true);
+  const handleNewSession = (sessionType) => {
+    setNewSession(sessionType);
+    console.log(sessionType)
   }
 
   return (
@@ -489,7 +578,7 @@ function TriathlonView({ controller }) {
 
       {/* Popups */}
       {changeSettings ? (<Settings onHide={handleHide} />) : null}
-      {newSession ? (<NewSession onHide={handleHide} controller={controller} setNewSession={setNewSession} />) : null}
+      {newSession ? (<NewSession onHide={handleHide} controller={controller} setNewSession={setNewSession} session={newSession} />) : null}
       {showRegister ? <Register onHide={handleHide} onSignUp={handleSignUp} /> : null}
 
       {/* Main view */}
