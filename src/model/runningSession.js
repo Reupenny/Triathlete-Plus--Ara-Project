@@ -2,8 +2,8 @@ import { TrainingSession, SportType } from "./trainingSession";
 
 export class RunningSession extends TrainingSession {
 
-    constructor(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition) {
-        super(date, notes, SportType.RUNNING);
+    constructor(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition, sessionID) {
+        super(date, notes, SportType.RUNNING, sessionID);
         this.distance = distance; // Km
         this.duration = duration; // Mins
         this.shoesUsed = shoesUsed;

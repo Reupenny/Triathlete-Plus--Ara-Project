@@ -18,15 +18,17 @@ export class Member {
         if (allMembers) {
             const member = await allMembers.find(m => m.memberID === memberID);
             if (member) {
-                       const memberData = {
+                const memberData = {
                     memberID: member.memberID,
                     userName: member.userName,
                     fName: member.fName,
                     lName: member.lName
-        };
+                };
                 return memberData
-            }}}
-                
+            }
+        }
+    }
+
     async createMember(userName, fName, lName) {
         if (typeof userName !== 'string') {
             throw new Error("Username must be a string");
@@ -103,7 +105,7 @@ export class Member {
     generateMemberID() {
         let localID = window.localStorage.getItem("lastMemberID");
         let lastId = this.lastMemberID
-        if (lastId == 0 & localID) {
+        if (lastId == 0 && localID) {
             this.lastMemberID = localID
         }
         this.lastMemberID++; // Increment last used ID

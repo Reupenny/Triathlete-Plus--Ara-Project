@@ -2,8 +2,8 @@ import { TrainingSession, SportType } from "./trainingSession";
 
 export class CyclingSession extends TrainingSession {
 
-    constructor(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition) {
-        super(date, notes, SportType.CYCLING);
+    constructor(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition, sessionID) {
+        super(date, notes, SportType.CYCLING, sessionID);
         this.distance = distance;
         this.duration = duration;
         this.terrain = terrain; // road, mountain

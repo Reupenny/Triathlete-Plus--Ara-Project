@@ -1,8 +1,8 @@
 import { TrainingSession, SportType } from "./trainingSession";
 
 export class SwimmingSession extends TrainingSession {
-    constructor(date, notes, lapLength, strokeType, lapTimes, waterTemperature) {
-        super(date, notes, SportType.SWIMMING);
+    constructor(date, notes, lapLength, strokeType, lapTimes, waterTemperature, sessionID) {
+        super(date, notes, SportType.SWIMMING, sessionID);
         this.lapLength = lapLength; //Meters
         this.strokeType = strokeType;
         this.laps = lapTimes.length;
@@ -15,7 +15,7 @@ export class SwimmingSession extends TrainingSession {
 
     getTotalDistance() {
         // Calculates the total length of swimming in Km
-        return (this.lapLength * this.laps);
+        return ((this.lapLength * this.laps) / 1000);
     }
 
     getTotalDuration() {

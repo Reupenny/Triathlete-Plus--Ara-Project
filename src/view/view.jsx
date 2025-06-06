@@ -82,14 +82,27 @@ function Settings({ onHide }) {
 }
 
 
-function ViewSession({ onHide, session }) {
+function ViewSession({ onHide, session, onEditSession, controller }) {
   const member = session.memberID
+
+  const sessionDate = new Date(session.date)
+  const formattedDate = sessionDate.toLocaleDateString('en-NZ')
+
+  const handleEdit = (session) => {
+    onEditSession(session); // Call the passed prop to open modal in TriathlonView
+  };
+  const handleDelete = (sessionID) => {
+    controller.deleteTrainingSession(sessionID)
+  }
   return (
     <>
       <div id="hide" onClick={onHide}></div>
-      <div className="box" id="settings">
+      <div className="box" id="session-info">
         <div>
-          <h2 className={session.sportType + ' sport-type'}><i className={'icon icon-' + session.sportType}></i> {session.sportType}</h2>
+          <div>
+            <h2 className={session.sportType + ' sport-type'}><i className={'icon icon-' + session.sportType}></i> {session.sportType}</h2>
+            <h4 className='session-date'>{formattedDate}</h4><br />
+          </div>
           <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
         </div>
         <div className='dataView'>
@@ -129,6 +142,8 @@ function ViewSession({ onHide, session }) {
             <h4>Pool Length: </h4> <p>{session.lapLength + "m"}</p><br />
             <h4>Laps: </h4> <p>{session.laps}</p><br />
             <h4>Total Distance: </h4> <p>{session.duration}</p><br />
+            <h4>Stroke Type: </h4> <p>{session.strokeType}</p><br />
+            <h4>Stroke Type: </h4> <p>{session.strokeType}</p><br />
           </>
         ) : session.sportType === 'Running' ? (
           <>
@@ -146,30 +161,61 @@ function ViewSession({ onHide, session }) {
         )}
         <p>{"Session ID: " + session.sessionID}</p>
         <p>{"Member ID: " + member.memberID}</p><br />
-        <h4>Date of session:</h4> <p>{session.date}</p><br />
         <h4>Notes:</h4> <p>{session.notes}</p>
         <br />
-
-        <i className='icon icon-edit' onClick={() => handleEdit(session)}></i>
-        <i className='icon icon-trash' onClick={() => handleDelete(session.sessionID)}></i>
+        <div className='popup-edit'>
+          <i className='icon icon-edit' onClick={() => handleEdit(session)}></i>
+          <i className='icon icon-trash' onClick={() => handleDelete(session.sessionID)}></i>
+        </div>
       </div>
     </>
   );
 }
-function UserPage({ logout, onNewSession, firstName, settings }) {
+function AllSessionData({ controller, trainingSessions2 }) {
+  const [trainingSessions, setTrainingSessions] = useState([]);
+  const [averagePace, setAveragePace] = useState('')
+
+
+  useEffect(() => {
+    const fetchTrainingSessions = async () => {
+      let sessions = await controller.getAllTrainingSessions();
+      setTrainingSessions(sessions);
+      setAveragePace(controller.calculateAveragePace())
+    };
+
+    fetchTrainingSessions();
+  }, [controller]);
+
+  console.log(trainingSessions)
+  return (
+    <div id='userPage'>
+      <h4>Training Data</h4>
+      <div className='card'>
+        <p className='card-header'>Average pace</p>
+        <p className='card-text'>{averagePace}</p>
+      </div>
+
+    </div>
+  );
+}
+
+function UserPage({ logout, onNewSession, firstName, settings, controller, trainingSessions }) {
   return (
     <div id='userPage'>
       <div>
         <img className='logo' src={Logo} alt="Triathlete plus logo" />
         <br />
         <br />
-        <p>Create a new training session</p>
-        <button className='pink' id='running' onClick={() => onNewSession('running')}>Running</button>
-        <button className='blue' id='swimming' onClick={() => onNewSession('swimming')}>Swimming</button>
-        <button className='orange' id='cycling' onClick={() => onNewSession('cycling')}>Cycling</button>
+        <div>
+          <h4>Log a session</h4>
+          <button className='pink button-big' id='running' onClick={() => onNewSession('running')}>Running</button>
+          <button className='blue button-big' id='swimming' onClick={() => onNewSession('swimming')}>Swimming</button>
+          <button className='orange button-big' id='cycling' onClick={() => onNewSession('cycling')}>Cycling</button>
+        </div>
         <form>
           <input type="text" id="searchSessions" placeholder="Search training sessions" />
         </form>
+        <AllSessionData controller={controller} trainingSessions={trainingSessions} />
       </div>
       <div className='row'>
         <p>{firstName}</p>
@@ -233,7 +279,6 @@ function RunningForm({ onFormChange, formData }) {
   return (
     <>
       {formData ? (
-        // What to render if formData is true
         <>
           <p>{"Session ID: " + formData.sessionID}</p>
           <p>{"Member ID: " + member.memberID}</p><br />
@@ -524,7 +569,7 @@ function NewSession({ onHide, controller, setNewSession, session, sessionData })
   );
 }
 
-function MainPanel({ controller, onEditSession, onViewSession }) {
+function MainPanel({ controller, onEditSession, onViewSession, trainingSessions2 }) {
   const [trainingSessions, setTrainingSessions] = useState([]);
   const [sortBy, setSortBy] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
@@ -551,6 +596,8 @@ function MainPanel({ controller, onEditSession, onViewSession }) {
         }
       }
       setTrainingSessions(sessions);
+      trainingSessions2 = sessions
+      console.log(trainingSessions2)
     };
 
     fetchTrainingSessions();
@@ -573,9 +620,7 @@ function MainPanel({ controller, onEditSession, onViewSession }) {
   }
   const handleView = (session) => {
     onViewSession(session)
-    // controller.deleteTrainingSession(session)
   }
-
   return (
     <>
       <main>
@@ -599,11 +644,16 @@ function MainPanel({ controller, onEditSession, onViewSession }) {
             </thead>
             <tbody>
               {trainingSessions.map((entry, index) => {
-                // const visualData = getVisualDataForEntry(entry);
+                if (entry.sportType === 'Swimming') {
+                  const swimmingDistance = controller.swimmingSessionDistance(entry)
+                  const swimmingDuration = controller.swimmingSessionDuration(entry)
+                }
+                const sessionDate = new Date(entry.date)
+                const formattedDate = sessionDate.toLocaleDateString('en-NZ')
                 return (
                   <tr key={index} data-sport={entry.sportType}>
                     <td className={entry.sportType + ' sport-type'}><i className={'icon icon-' + entry.sportType}></i> {entry.sportType}</td>
-                    <td>{entry.date}</td>
+                    <td>{formattedDate}</td>
                     <td>
                       <div className="distance-duration-visual">
                         {Array.isArray(entry.lapTimes) && (
@@ -611,19 +661,17 @@ function MainPanel({ controller, onEditSession, onViewSession }) {
                             {entry.lapTimes.map((lapTime, lapIndex) => (
                               <div key={lapIndex}>
                                 <div
-                                  // key={`lap-dot-${lapIndex}`}
                                   className="lap-dot"
                                   style={{ left: `${(lapIndex + 1) * (100 / entry.lapTimes.length)}%` }}
                                 ></div>
                                 <div
-                                  // key={`lap-time-${lapIndex}`}
                                   className="lap-time-label"
                                   style={{ left: `${(lapIndex + 1) * (100 / entry.lapTimes.length)}%` }}
                                 >{lapTime + 's'}</div>
                               </div>
                             ))}
                             <div className="end-dot"></div>
-                            <span className="distance-label">{`${entry.distance}m / ${entry.lapLength}m laps`}</span>
+                            <span className="distance-label">{`${entry.distance} Km / ${entry.lapLength}m laps`}</span>
                           </>
                         )}
                         {!Array.isArray(entry.lapTimes) && (
@@ -647,21 +695,16 @@ function MainPanel({ controller, onEditSession, onViewSession }) {
             </tbody>
           </table>
         </div>
-        <div className='box' >
-          <div>
-            <h2>Training Data</h2>
-          </div>
-        </div>
       </main>
     </>
   );
 }
 
-function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, settings }) {
+function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, settings, controller, trainingSessions }) {
   return (
     <>
       <aside className='box' >
-        {loggedIn ? <UserPage logout={logout} onNewSession={onNewSession} firstName={firstName} settings={settings} /> : <Login onRegister={onRegister} onSubmit={onSubmit} />}
+        {loggedIn ? <UserPage trainingSessions={trainingSessions} controller={controller} logout={logout} onNewSession={onNewSession} firstName={firstName} settings={settings} /> : <Login onRegister={onRegister} onSubmit={onSubmit} />}
       </aside>
     </>
   );
@@ -676,7 +719,7 @@ function TriathlonView({ controller }) {
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem('LoggedIn') === 'true');
   const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : ""); // Show users name
   const [changeSettings, setChangeSettings] = useState(false);
-
+  const [trainingSessions, setTrainingSessions] = useState([]);
 
   const handleRegister = () => {
     setShowRegister(true);
@@ -711,11 +754,16 @@ function TriathlonView({ controller }) {
   // For opening NewSession in 'edit' mode
   const handleOpenEditModal = (sessionData) => {
     setNewSessionData(sessionData); // The full session object
+    setViewSession(null) // hides the session view if its open
     setNewSession(true); // e.g., 'running'
   };
 
   const handleViewSession = (session) => {
     setViewSession(session)
+  }
+
+  const handleSetTrainingSessions = (session) => {
+    setTrainingSessions(session)
   }
 
   return (
@@ -727,11 +775,11 @@ function TriathlonView({ controller }) {
       {changeSettings ? (<Settings onHide={handleHide} />) : null}
       {newSession ? (<NewSession onHide={handleHide} controller={controller} setNewSession={setNewSession} session={newSession} sessionData={newSessionData} />) : null}
       {showRegister ? <Register onHide={handleHide} onSignUp={handleSignUp} /> : null}
-      {viewSessionData ? (<ViewSession session={viewSessionData} onHide={handleHide} />) : null}
+      {viewSessionData ? (<ViewSession session={viewSessionData} onHide={handleHide} controller={controller} onEditSession={handleOpenEditModal} />) : null}
 
       {/* Main view */}
-      <SidePanel onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleOpenNewSessionModal} firstName={firstName} settings={handleChangeSettings} />
-      {loggedIn ? (<MainPanel controller={controller} onEditSession={handleOpenEditModal} onViewSession={handleViewSession} />) : null}
+      <SidePanel trainingSessions={trainingSessions} onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleOpenNewSessionModal} firstName={firstName} settings={handleChangeSettings} controller={controller} />
+      {loggedIn ? (<MainPanel trainingSessions2={handleSetTrainingSessions} controller={controller} onEditSession={handleOpenEditModal} onViewSession={handleViewSession} />) : null}
     </>
   );
 }

@@ -15,12 +15,11 @@ export class TriathlonData {
         await TriathlonData.database.init();
     }
 
-    async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature) {
-        // Handle missing date:  If no date is provided, use the current date
-        if (!date) {
-            // Use today's date in YYYY-MM-DD format
-            date = format(new Date(), 'yyyy-MM-dd');
-        }
+    async CreateSwimmingSession(date = Date(), notes = '', lapLength = 0, strokeType = 'Freestyle', lapTimes = [], waterTemperature = 0) {
+        // // Handle missing date:  If no date is provided, use the current date
+        // if (!date) {
+        //     date = new Date().toLocaleDateString('en-NZ');
+        // }
         // Type Checks and Existence Checks
         if (typeof lapLength !== 'number') {
             throw new Error("Lap Length must be a number");
@@ -43,10 +42,9 @@ export class TriathlonData {
             throw new Error("Water temperature must be between 0 and 40 degrees Celsius.");
         }
         // Format Validation Date
-        // Parse and validate YYYY-MM-DD format
-        const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+        const parsedDate = parse(date, 'd/M/yyyy', new Date());
         if (!isValid(parsedDate)) {
-            throw new Error("Invalid date. Please use YYYY-MM-DD and ensure a valid date.");
+            throw new Error(`Invalid date. Please use d/M/yyyy and ensure a valid date.`);
         }
         // Array Validation
         if (!Array.isArray(lapTimes)) {
@@ -61,9 +59,8 @@ export class TriathlonData {
             }
         }
         try {
-            const sessionID = SwimmingSession.generateSessionID();
-            const newSession = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature, sessionID);
-
+            const newSession = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature);
+            const distance = newSession.getTotalDistance();
             const sessionData = {
                 sessionID: newSession.sessionID,
                 memberID: newSession.memberID,
@@ -75,20 +72,21 @@ export class TriathlonData {
                 laps: newSession.laps,
                 lapTimes: newSession.lapTimes,
                 waterTemperature: newSession.waterTemperature,
+                distance: distance
             };
             await TriathlonData.database.addData("TrainingSessions", sessionData);
             return newSession;
+
         } catch (error) {
             throw new Error("Error creating swimming session.", error);
         }
     }
 
-    async CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition) {
-        // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
-        if (!date) {
-            // Use today's date in YYYY-MM-DD format
-            date = format(new Date(), 'yyyy-MM-dd');
-        }
+    async CreateCyclingSession(date = Date(), notes = '', distance = 0, duration = 0, terrain = '', bikeUsed = '', airTemperature = 0, weatherCondition) {
+        // // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
+        // if (!date) {
+        //     date = new Date().toLocaleDateString('en-NZ');
+        // }
         // Type Checks and Existence Checks
         if (typeof distance !== 'number') {
             throw new Error("Distance must be a number.");
@@ -111,9 +109,9 @@ export class TriathlonData {
         if (typeof bikeUsed !== 'string') {
             throw new Error("Bike Used must be a string.");
         }
-        if (!weatherCondition) {
-            weatherCondition = "";
-        }
+        // if (!weatherCondition) {
+        //     weatherCondition = "";
+        // }
         if (weatherCondition && typeof weatherCondition !== 'string') {
             throw new Error("Weather Condition must be a string.");
         }
@@ -132,15 +130,13 @@ export class TriathlonData {
         }
 
         // Format Validation Date
-        // Parse and validate YYYY-MM-DD format
-        const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+        const parsedDate = parse(date, 'd/M/yyyy', new Date());
         if (!isValid(parsedDate)) {
-            throw new Error("Invalid date. Please use YYYY-MM-DD and ensure a valid date.");
+            throw new Error(`Invalid date. Please use d/M/yyyy and ensure a valid date.`);
         }
 
         try {
-            const sessionID = CyclingSession.generateSessionID();
-            const newSession = new CyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition, sessionID);
+            const newSession = new CyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition);
             const sessionData = {
                 sessionID: newSession.sessionID,
                 memberID: newSession.memberID,
@@ -152,7 +148,7 @@ export class TriathlonData {
                 terrain: newSession.terrain,
                 bikeUsed: newSession.bikeUsed,
                 airTemperature: newSession.airTemperature,
-                weatherCondition: weatherCondition
+                weatherCondition: newSession.weatherCondition
             };
             await TriathlonData.database.addData("TrainingSessions", sessionData);
             return newSession;
@@ -160,12 +156,10 @@ export class TriathlonData {
             throw new Error("Error creating cycling session.", error);
         }
     }
-
     async CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition) {
         // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
         if (!date) {
-            // Use today's date in YYYY-MM-DD format
-            date = format(new Date(), 'yyyy-MM-dd');
+            date = new Date().toLocaleDateString('en-NZ');
         }
         // Type Checks and Existence Checks
         if (typeof distance !== 'number') {
@@ -204,14 +198,12 @@ export class TriathlonData {
         }
 
         // Format Validation Date
-        // Parse and validate YYYY-MM-DD format
-        const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+        const parsedDate = parse(date, 'd/M/yyyy', new Date());
         if (!isValid(parsedDate)) {
-            throw new Error("Invalid date. Please use YYYY-MM-DD and ensure a valid date.");
+            throw new Error(`Invalid date. Please use d/M/yyyy and ensure a valid date.`);
         }
         try {
-            const sessionID = RunningSession.generateSessionID();
-            const newSession = new RunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition, sessionID);
+            const newSession = new RunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition);
             const sessionData = {
                 sessionID: newSession.sessionID,
                 memberID: newSession.memberID,
@@ -340,7 +332,7 @@ export class TriathlonData {
         }
 
         const averagePace = totalDuration / totalDistance;
-        return `${averagePace.toFixed(2)} minutes per kilometer`;
+        return `Average pace: ${averagePace.toFixed(2)} minutes per kilometer`;
     }
 
     async findTrainingSessionByID(sessionID) {
@@ -432,9 +424,5 @@ export class TriathlonData {
             // Handle potential database errors during addData
             throw new Error(`Failed to restore session ${sessionID}: ${error.message}`);
         }
-    }
-
-    async getAllTrainingSessions() {
-        return await TriathlonData.database.getAllData("TrainingSessions");
     }
 }

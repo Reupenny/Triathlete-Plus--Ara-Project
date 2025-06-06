@@ -84,6 +84,12 @@ class TriathlonController {
         }
     }
 
+    async calculateAveragePace() {
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions();
+        console.log(trainingSessions)
+        return await this.triathlonData.calculateAveragePace(trainingSessions);
+    }
+
     async handleNewSession(formData, setNewSession) {
         try {
             if (formData.sport === 'swimming') {
@@ -132,6 +138,13 @@ class TriathlonController {
             toast.error(error.message);
             return null;
         }
+    }
+
+    async swimmingSessionDistance(session) {
+        session.getTotalDistance()
+    }
+    async swimmingSessionDuration(session) {
+        session.getTotalDuration()
     }
 
     async editTrainingSession(sessionID, updatedSession, setNewSession) {

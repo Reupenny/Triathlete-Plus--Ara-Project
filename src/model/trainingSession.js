@@ -5,11 +5,11 @@ export const SportType = {
 };
 
 export class TrainingSession {
-    static lastSessionID = 0; // Track last session ID
     #sessionID
+    static lastSessionID = 0; // Track last session ID
 
-    constructor(date, notes, sportType) {
-        this.#sessionID = TrainingSession.generateSessionID();
+    constructor(date, notes, sportType, sessionID) {
+        this.#sessionID = sessionID;
         this.memberID = window.localStorage.getItem("currentUser")
         this.date = date
         this.notes = notes;
@@ -23,13 +23,15 @@ export class TrainingSession {
     static generateSessionID() {
         let localID = window.localStorage.getItem("lastSessionID");
         let lastId = this.lastSessionID
-        if (lastId == 0 & localID) {
+        if (lastId == 0 && localID) {
             this.lastSessionID = localID
         }
-
-        this.lastSessionID++; // Increment last used ID
-        window.localStorage.setItem("lastSessionID", this.lastSessionID);
-        return `S${String(this.lastSessionID).padStart(4, '0')}`;
+        // lastId = this.lastSessionID
+        let newId = ++this.lastSessionID// Pre-increment
+        this.lastSessionID = newId; // Update the class property
+        window.localStorage.setItem("lastSessionID", newId);
+        console.log("New ID: " + newId)
+        return `S${String(newId).padStart(4, '0')}`;
     }
 
     getDetails() {
