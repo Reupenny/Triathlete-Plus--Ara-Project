@@ -1,9 +1,10 @@
 import { toast } from 'sonner'
 
 class TriathlonController {
-    constructor(triathlonData, member) {
+    constructor(triathlonData, member, swimmingSession) {
         this.triathlonData = triathlonData
         this.member = member
+        this.swimmingSession = swimmingSession
 
         // Setup
         try {
@@ -140,11 +141,11 @@ class TriathlonController {
         }
     }
 
-    async swimmingSessionDistance(session) {
-        session.getTotalDistance()
+    async swimmingSessionDistance(lapLength, laps) {
+        return this.triathlonData.getTotalDistance(lapLength, laps)
     }
-    async swimmingSessionDuration(session) {
-        session.getTotalDuration()
+    async swimmingSessionDuration(lapTimes) {
+        return this.triathlonData.getTotalDuration(lapTimes)
     }
 
     async editTrainingSession(sessionID, updatedSession, setNewSession) {

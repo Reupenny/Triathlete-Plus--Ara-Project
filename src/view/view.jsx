@@ -83,10 +83,23 @@ function Settings({ onHide }) {
 
 
 function ViewSession({ onHide, session, onEditSession, controller }) {
+  const [swimmingDistance, setSwimmingDistance] = useState(0);
+  const [swimmingDuration, setSwimmingDuration] = useState(0);
   const member = session.memberID
-
   const sessionDate = new Date(session.date)
   const formattedDate = sessionDate.toLocaleDateString('en-NZ')
+
+  useEffect(() => {
+    if (session.sportType === 'Swimming') {
+      (async () => {
+        let swimmingDistanceValue = await controller.swimmingSessionDistance(session.lapLength, session.laps);
+        let swimmingDurationValue = await controller.swimmingSessionDuration(session.lapTimes);
+        setSwimmingDistance(swimmingDistanceValue);
+        setSwimmingDuration(swimmingDurationValue);
+        console.log('sets sessions')
+      })();
+    }
+  }, [session, controller]);
 
   const handleEdit = (session) => {
     onEditSession(session); // Call the passed prop to open modal in TriathlonView
@@ -122,19 +135,30 @@ function ViewSession({ onHide, session, onEditSession, controller }) {
                   </div>
                 ))}
                 <div className="end-dot"></div>
-                <span className='end-label'>{session.duration % 1 === 0 ? session.duration : session.duration.toFixed(2)}min</span>
-                <span className="distance-label">{`${session.distance}m / ${session.lapLength}m laps`}</span>
+                <span className="distance-label">{`${swimmingDistance} Km / ${session.lapLength}m laps`}</span>
               </>
             )}
-            {!Array.isArray(session.lapTimes) && (
+            {session.sportType !== 'Swimming' && (
               <>
                 <div className="start-dot"></div>
                 <div className="end-dot" style={{ left: `100%` }}></div>
-                <span className='end-label'>{session.duration % 1 === 0 ? session.duration : session.duration.toFixed(2)}min</span>
-                <span className="distance-label">{`${(session.distance)} Km`}</span>
+                <span className="distance-label">{`${session.distance} Km`}</span>
               </>
             )}
-
+          </div>
+          <div>
+            {session.sportType === 'Swimming' && (
+              <>
+                <span className='end-label'>{swimmingDuration} min</span>
+              </>
+            )
+            }
+            {session.sportType !== 'Swimming' && (
+              <>
+                <span className='end-label'>{session.duration % 1 === 0 ? session.duration : session.duration.toFixed(2)} min</span>
+              </>
+            )
+            }
           </div></div><br />
 
         {session.sportType === 'Swimming' ? (
@@ -186,7 +210,6 @@ function AllSessionData({ controller, trainingSessions2 }) {
     fetchTrainingSessions();
   }, [controller]);
 
-  console.log(trainingSessions)
   return (
     <div id='userPage'>
       <h4>Training Data</h4>
@@ -577,27 +600,43 @@ function MainPanel({ controller, onEditSession, onViewSession, trainingSessions2
   useEffect(() => {
     const fetchTrainingSessions = async () => {
       let sessions = await controller.getAllTrainingSessions();
+
+      // Calculate swimming data for each session if it's a swimming session
+      const sessionsWithCalculatedData = await Promise.all(sessions.map(async (entry) => {
+        if (entry.sportType === 'Swimming') {
+          const swimmingDistanceValue = await controller.swimmingSessionDistance(entry.lapLength, entry.laps);
+          const swimmingDurationValue = await controller.swimmingSessionDuration(entry.lapTimes);
+          return {
+            ...entry,
+            calculatedSwimmingDistance: swimmingDistanceValue,
+            calculatedSwimmingDuration: swimmingDurationValue,
+          };
+        }
+        return entry;
+      }));
+
+      let sortedSessions = sessionsWithCalculatedData;
       if (sortBy) {
         switch (sortBy) {
           case 'date':
-            sessions = await controller.sortTrainingSessionsByDate(sessions);
+            sortedSessions = await controller.sortTrainingSessionsByDate(sortedSessions);
             break;
           case 'sport':
-            sessions = await controller.sortTrainingSessionsBySportType(sessions);
+            sortedSessions = await controller.sortTrainingSessionsBySportType(sortedSessions);
             break;
           case 'distance':
-            sessions = await controller.sortTrainingSessionsByDistance(sessions);
+            sortedSessions = await controller.sortTrainingSessionsByDistance(sortedSessions);
             break;
           default:
             break;
         }
         if (sortDirection === 'desc') {
-          sessions = sessions.reverse();
+          sortedSessions = sortedSessions.reverse();
         }
       }
-      setTrainingSessions(sessions);
-      trainingSessions2 = sessions
-      console.log(trainingSessions2)
+      setTrainingSessions(sortedSessions);
+      trainingSessions2 = sortedSessions;
+      console.log(trainingSessions2);
     };
 
     fetchTrainingSessions();
@@ -640,14 +679,11 @@ function MainPanel({ controller, onEditSession, onViewSession, trainingSessions2
                 <th>Date</th>
                 <th>Distance & Duration</th>
                 <th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {trainingSessions.map((entry, index) => {
-                if (entry.sportType === 'Swimming') {
-                  const swimmingDistance = controller.swimmingSessionDistance(entry)
-                  const swimmingDuration = controller.swimmingSessionDuration(entry)
-                }
                 const sessionDate = new Date(entry.date)
                 const formattedDate = sessionDate.toLocaleDateString('en-NZ')
                 return (
@@ -671,18 +707,30 @@ function MainPanel({ controller, onEditSession, onViewSession, trainingSessions2
                               </div>
                             ))}
                             <div className="end-dot"></div>
-                            <span className="distance-label">{`${entry.distance} Km / ${entry.lapLength}m laps`}</span>
+                            <span className="distance-label">{`${entry.calculatedSwimmingDistance} Km / ${entry.lapLength}m laps`}</span>
                           </>
                         )}
-                        {!Array.isArray(entry.lapTimes) && (
+                        {entry.sportType !== 'Swimming' && (
                           <>
                             <div className="start-dot"></div>
                             <div className="end-dot" style={{ left: `100%` }}></div>
-                            <span className="distance-label">{`${(entry.distance)} Km`}</span>
+                            <span className="distance-label">{`${entry.distance} Km`}</span>
                           </>
                         )}
-                        <span className='end-label'>{entry.duration % 1 === 0 ? entry.duration : entry.duration.toFixed(2)}min</span>
                       </div>
+                    </td><td>
+                      {entry.sportType === 'Swimming' && (
+                        <>
+                          <span className='end-label'>{entry.calculatedSwimmingDuration} min</span>
+                        </>
+                      )
+                      }
+                      {entry.sportType !== 'Swimming' && (
+                        <>
+                          <span className='end-label'>{entry.duration % 1 === 0 ? entry.duration : entry.duration.toFixed(2)} min</span>
+                        </>
+                      )
+                      }
                     </td>
                     <td className="more-cell">
                       <i className='icon icon-info' onClick={() => handleView(entry)}></i>

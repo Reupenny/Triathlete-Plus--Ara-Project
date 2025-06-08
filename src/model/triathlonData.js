@@ -1,25 +1,25 @@
-import { SwimmingSession } from "./swimmingSession";
-import { RunningSession } from "./runningSession";
-import { CyclingSession } from "./cyclingSession";
-import { History } from "./history";
-import { Database } from "./database";
-import { isValid, parse } from 'date-fns';
+import { SwimmingSession } from "./swimmingSession"
+import { RunningSession } from "./runningSession"
+import { CyclingSession } from "./cyclingSession"
+import { History } from "./history"
+import { Database } from "./database"
+import { isValid, parse } from 'date-fns'
 
 export class TriathlonData {
-    static database = new Database();
+    static database = new Database()
 
     constructor() {
-        this.history = new History();
+        this.history = new History()
     }
     async initialiseAndLoad() {
-        await TriathlonData.database.init();
+        await TriathlonData.database.init()
     }
 
     async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature) {
         // Handle missing date:  If no date is provided, use the current date
         if (!date) {
             // Use today's date in YYYY-MM-DD format
-            date = format(new Date(), 'yyyy-MM-dd');
+            date = format(new Date(), 'yyyy-MM-dd')
         }
         // Type Checks and Existence Checks
         if (typeof lapLength !== 'number') {
@@ -323,118 +323,133 @@ export class TriathlonData {
         let totalDuration = 0;
 
         trainingSessions.forEach(session => {
-            let distance = session.distance;
+            let distance = session.distance
+            let duration = session.duration
             if (session.sportType === "Swimming") {
-                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemperature);
-                distance = swimmingSession.getTotalDistance();
+                // const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemperature);
+                distance = this.getTotalDistance(session.lapLength, session.laps)
+                duration = this.getTotalDuration(session.lapTimes)
             }
 
-            if (distance && session.duration) {
-                totalDistance += distance;
-                totalDuration += session.duration;
+            if (distance && duration) {
+                totalDistance += parseFloat(distance)
+                totalDuration += parseFloat(duration)
             }
-        });
+        })
 
         if (totalDistance === 0 || totalDuration === 0) {
-            return "No training sessions found with valid distance and duration.";
+            return "No training sessions found with valid distance and duration."
         }
 
         const averagePace = totalDuration / totalDistance;
-        return `${averagePace.toFixed(2)} minutes per kilometer`;
+        return `${averagePace.toFixed(2)} minutes per kilometer`
     }
 
     async findTrainingSessionByID(sessionID) {
         if (typeof sessionID !== 'string' || !sessionID) {
-            throw new Error("Session ID must be a non-empty string.");
+            throw new Error("Session ID must be a non-empty string.")
         }
-        return await TriathlonData.database.getData("TrainingSessions", sessionID);
+        return await TriathlonData.database.getData("TrainingSessions", sessionID)
     }
 
 
     async searchTrainingSessions(searchType, searchQuery) {
         // searchType selects the row of data to search for the searchQuery in 
-        const loggedInMemberID = window.localStorage.getItem("currentUser");
+        const loggedInMemberID = window.localStorage.getItem("currentUser")
 
         if (!loggedInMemberID) {
-            return { message: "Please log in to search for training sessions." };
+            return { message: "Please log in to search for training sessions." }
         }
 
-        const trainingSessions = await TriathlonData.database.getAllData("TrainingSessions");
-        const results = {};
+        const trainingSessions = await TriathlonData.database.getAllData("TrainingSessions")
+        const results = {}
 
         trainingSessions.forEach(session => {
             if (session.memberID === loggedInMemberID && session[searchType] && session[searchType].toString().toLowerCase().includes(searchQuery.toLowerCase())) {
-                results[session.sessionID] = session;
+                results[session.sessionID] = session
             }
         });
 
-        return results;
+        return results
     }
 
 
     async deleteTrainingSession(sessionID) {
-        const loggedInMemberID = window.localStorage.getItem("currentUser");
-        const sessionToDelete = await this.findTrainingSessionByID(sessionID);
+        const loggedInMemberID = window.localStorage.getItem("currentUser")
+        const sessionToDelete = await this.findTrainingSessionByID(sessionID)
         if (!sessionToDelete) {
-            throw new Error("Session not found");
+            throw new Error("Session not found")
         }
         if (sessionToDelete.memberID !== loggedInMemberID) {
-            throw new Error("You are not authorised to delete this session");
+            throw new Error("You are not authorised to delete this session")
         }
-        await TriathlonData.database.deleteData("TrainingSessions", sessionID);
+        await TriathlonData.database.deleteData("TrainingSessions", sessionID)
         //Adds old session to history list
-        this.history.addHistory(sessionToDelete);
+        this.history.addHistory(sessionToDelete)
     }
 
     async editTrainingSession(sessionID, updatedSession) {
-        const loggedInMemberID = window.localStorage.getItem("currentUser");
-        const sessionToEdit = await this.findTrainingSessionByID(sessionID);
+        const loggedInMemberID = window.localStorage.getItem("currentUser")
+        const sessionToEdit = await this.findTrainingSessionByID(sessionID)
 
         if (!sessionToEdit) {
-            throw new Error("Session not found");
+            throw new Error("Session not found")
         }
         if (sessionToEdit.memberID !== loggedInMemberID) {
-            throw new Error("You are not authorised to edit this session");
+            throw new Error("You are not authorised to edit this session")
         }
         //Adds old session to history list
-        this.history.addHistory(sessionToEdit);
+        this.history.addHistory(sessionToEdit)
         // Update the session details
-        Object.assign(sessionToEdit, updatedSession);
-        await TriathlonData.database.updateData("TrainingSessions", sessionToEdit);
-        return sessionToEdit;
+        Object.assign(sessionToEdit, updatedSession)
+        await TriathlonData.database.updateData("TrainingSessions", sessionToEdit)
+        return sessionToEdit
     }
 
     async restoreTrainingSession(sessionID) {
-        const loggedInMemberID = window.localStorage.getItem("currentUser");
+        const loggedInMemberID = window.localStorage.getItem("currentUser")
         // Get the session data from history (newest match)
-        const sessionData = this.history.getSessionFromHistory(sessionID);
+        const sessionData = this.history.getSessionFromHistory(sessionID)
 
         if (!sessionData) {
-            throw new Error(`Session with ID ${sessionID} not found in history.`);
+            throw new Error(`Session with ID ${sessionID} not found in history.`)
         }
         if (sessionData.memberID !== loggedInMemberID) {
-            throw new Error("You are not authorised to restore this session");
+            throw new Error("You are not authorised to restore this session")
         }
         try {
             // Add or update the session in the database
-            const existingSession = await TriathlonData.database.getData("TrainingSessions", sessionID);
+            const existingSession = await TriathlonData.database.getData("TrainingSessions", sessionID)
             if (existingSession) {
-                await TriathlonData.database.updateData("TrainingSessions", sessionData);
+                await TriathlonData.database.updateData("TrainingSessions", sessionData)
             }
             else {
-                await TriathlonData.database.addData("TrainingSessions", sessionData);
+                await TriathlonData.database.addData("TrainingSessions", sessionData)
             }
             //Remove the session from history
-            this.history.removeSessionFromHistory(sessionID);
+            this.history.removeSessionFromHistory(sessionID)
             // Return the restored session data
             return sessionData;
         } catch (error) {
             // Handle potential database errors during addData
-            throw new Error(`Failed to restore session ${sessionID}: ${error.message}`);
+            throw new Error(`Failed to restore session ${sessionID}: ${error.message}`)
         }
     }
 
+    // Swimming Session Data
+    getTotalDistance(lapLength, laps) {
+        // Calculates the total length of swimming in Km
+        let result = ((lapLength * laps) / 1000)
+        return result % 1 === 0 ? result : result.toFixed(2)
+    }
+
+    getTotalDuration(lapTimes) {
+        // Calculates total time swimming 
+        let result = lapTimes.reduce((sum, time) => sum + time, 0) / 60
+        return result % 1 === 0 ? result : result.toFixed(2)
+    }
+
     async getAllTrainingSessions() {
-        return await TriathlonData.database.getAllData("TrainingSessions");
+        return await TriathlonData.database.getAllData("TrainingSessions")
     }
 }
