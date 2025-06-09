@@ -275,18 +275,19 @@ export class TriathlonData {
             throw new Error("Training sessions must be an array.");
         }
 
+        let totalDistance = 0;
         trainingSessions.forEach(session => {
             let distance = session.distance;
             if (session.sportType === "Swimming") {
                 const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemperature);
-                distance = swimmingSession.getTotalDistance();
+                distance = this.getTotalDistance(session.lapLength, session.lapTimes)
             }
             if (distance) {
-                totalDistance += distance;
+                totalDistance += parseFloat(distance);
             }
         });
 
-        return totalDistance;
+        return totalDistance.toFixed(2) + " kilometers";
     }
 
     async calculateAveragePace(trainingSessions) {
@@ -416,13 +417,13 @@ export class TriathlonData {
         // Calculates the total length of swimming in Km
         let laps = lapTimes.length
         let result = ((parseFloat(lapLength) * parseFloat(laps)) / 1000)
-        return result % 1 === 0 ? result : result.toFixed(2)
+        return result % 1 === 0 ? result : parseFloat(result.toFixed(2))
     }
 
     getTotalDuration(lapTimes) {
         // Calculates total time swimming 
         let result = lapTimes.reduce((sum, time) => parseFloat(sum) + parseFloat(time), 0) / 60
-        return result % 1 === 0 ? result : result.toFixed(2)
+        return result % 1 === 0 ? result : parseFloat(result.toFixed(2))
     }
 
     async getAllTrainingSessions() {

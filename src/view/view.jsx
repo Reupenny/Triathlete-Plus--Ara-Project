@@ -195,9 +195,10 @@ function ViewSession({ onHide, session, onEditSession, controller }) {
     </>
   );
 }
-function AllSessionData({ controller, trainingSessions2 }) {
+function AllSessionData({ controller }) {
   const [trainingSessions, setTrainingSessions] = useState([]);
   const [averagePace, setAveragePace] = useState('')
+  const [totalDistance, setTotalDistance] = useState('')
 
 
   useEffect(() => {
@@ -205,6 +206,7 @@ function AllSessionData({ controller, trainingSessions2 }) {
       let sessions = await controller.getAllTrainingSessions();
       setTrainingSessions(sessions);
       setAveragePace(controller.calculateAveragePace())
+      setTotalDistance(controller.calculateTotalDistance())
     };
 
     fetchTrainingSessions();
@@ -212,10 +214,13 @@ function AllSessionData({ controller, trainingSessions2 }) {
 
   return (
     <div id='userPage'>
-      <h4>Training Data</h4>
       <div className='card'>
         <p className='card-header'>Average pace</p>
         <p className='card-text'>{averagePace}</p>
+      </div>
+      <div className='card'>
+        <p className='card-header'>Total Distance</p>
+        <p className='card-text'>{totalDistance}</p>
       </div>
 
     </div>
@@ -229,20 +234,39 @@ function UserPage({ logout, onNewSession, firstName, settings, controller, train
         <img className='logo' src={Logo} alt="Triathlete plus logo" />
         <br />
         <br />
-        <div>
-          <h4>Log a session</h4>
+        <h4>Log a session</h4>
+        <div className='center'>
           <button className='pink button-big' id='running' onClick={() => onNewSession('running')}>Running</button>
           <button className='blue button-big' id='swimming' onClick={() => onNewSession('swimming')}>Swimming</button>
           <button className='orange button-big' id='cycling' onClick={() => onNewSession('cycling')}>Cycling</button>
         </div>
+
+        {/* Sort by should be here */}
         <form>
+          <div className="input-container">
+            <label htmlFor="newWeather">
+              Search Type
+            </label>
+            <select id="newWeather" name="newWeather">
+              <option value="" disabled>Search Type</option>
+              <option value="notes">Notes</option>
+              <option value="bikeUsed">Bike</option>
+              <option value="shoesUsed">Shoes</option>
+              <option value="distance">Distance</option>
+              <option value="duration">Duration</option>
+              <option value="sportType">Sport</option>
+            </select>
+          </div>
           <input type="text" id="searchSessions" placeholder="Search training sessions" />
+
         </form>
         <AllSessionData controller={controller} trainingSessions={trainingSessions} />
       </div>
+
+
       <div className='row'>
         <p>{firstName}</p>
-        <button onClick={settings} className='icon icon-settings'></button>
+        {/* <button onClick={settings} className='icon icon-settings'></button> */}
         <button onClick={logout}>Logout</button>
       </div>
     </div>
@@ -261,41 +285,56 @@ function RunningForm({ onFormChange, formData }) {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
+    let updatedDate = date;
+    let updatedDistance = distance;
+    let updatedDuration = duration;
+    let updatedWeather = weather;
+    let updatedAirTemp = airTemp;
+    let updatedNotes = notes;
+    let updatedShoesUsed = shoesUsed;
+
     switch (id) {
       case 'newDate':
+        updatedDate = value;
         setDate(value);
         break;
       case 'newDistance':
+        updatedDistance = value;
         setDistance(value);
         break;
       case 'newDuration':
+        updatedDuration = value;
         setDuration(value);
         break;
       case 'newWeather':
+        updatedWeather = value;
         setWeather(value);
         break;
       case 'newAirTemp':
+        updatedAirTemp = value;
         setAirTemp(value);
         break;
       case 'newNotes':
+        updatedNotes = value;
         setNotes(value);
         break;
       case 'newShoes':
+        updatedShoesUsed = value;
         setShoesUsed(value);
         break;
       default:
         break;
     }
-    // Send form data to parent component
+    // Send form data to parent component with the most recent values
     onFormChange({
       sport: 'running',
-      date,
-      distance,
-      duration,
-      weather,
-      airTemp,
-      notes,
-      shoesUsed,
+      date: updatedDate,
+      distance: updatedDistance,
+      duration: updatedDuration,
+      weather: updatedWeather,
+      airTemp: updatedAirTemp,
+      notes: updatedNotes,
+      shoesUsed: updatedShoesUsed,
     });
   };
 
@@ -380,34 +419,46 @@ function SwimmingForm({ onFormChange, formData }) {
   const member = formData?.memberID || null
   const handleChange = (e) => {
     const { id, value } = e.target;
+    let updatedDate = date;
+    let updatedLapLength = lapLength;
+    let updatedWaterTemp = waterTemp;
+    let updatedNotes = notes;
+    let updatedStrokeType = strokeType;
+    let updatedLapTimes = lapTimes; // Lap times are handled separately
+
     switch (id) {
       case 'newDate':
+        updatedDate = value;
         setDate(value);
         break;
       case 'newLapLength':
+        updatedLapLength = value;
         setLapLength(value);
         break;
       case 'newWaterTemp':
+        updatedWaterTemp = value;
         setWaterTemp(value);
         break;
       case 'newStroke':
+        updatedStrokeType = value;
         setStroke(value);
         break;
       case 'newNotes':
+        updatedNotes = value;
         setNotes(value);
         break;
       default:
         break;
     }
-    // Send form data to parent component
+    // Send form data to parent component with the most recent values
     onFormChange({
       sport: 'swimming',
-      date,
-      notes,
-      lapLength,
-      strokeType,
-      lapTimes,
-      waterTemp,
+      date: updatedDate,
+      notes: updatedNotes,
+      lapLength: updatedLapLength,
+      strokeType: updatedStrokeType,
+      lapTimes: updatedLapTimes, // Ensure lapTimes is the current state
+      waterTemp: updatedWaterTemp,
     });
   };
 
@@ -517,49 +568,65 @@ function CyclingForm({ onFormChange, formData }) {
   const [terrain, setTerrain] = useState(formData?.terrain || '');
 
   const member = formData?.memberID || null
-  console.log(formData)
 
   const handleChange = (e) => {
     const { id, value } = e.target;
+    let updatedDate = date;
+    let updatedDistance = distance;
+    let updatedDuration = duration;
+    let updatedWeather = weather;
+    let updatedAirTemp = airTemp;
+    let updatedNotes = notes;
+    let updatedBikeUsed = bikeUsed;
+    let updatedTerrain = terrain;
+
     switch (id) {
       case 'newDate':
+        updatedDate = value;
         setDate(value);
         break;
       case 'newDistance':
+        updatedDistance = value;
         setDistance(value);
         break;
       case 'newDuration':
+        updatedDuration = value;
         setDuration(value);
         break;
       case 'newTerrain':
+        updatedTerrain = value;
         setTerrain(value);
         break;
       case 'newWeather':
+        updatedWeather = value;
         setWeather(value);
         break;
       case 'newAirTemp':
+        updatedAirTemp = value;
         setAirTemp(value);
         break;
       case 'newNotes':
+        updatedNotes = value;
         setNotes(value);
         break;
       case 'newBikeUsed':
+        updatedBikeUsed = value;
         setBikeUsed(value);
         break;
       default:
         break;
     }
-    // Send form data to parent component
+    // Send form data to parent component with the most recent values
     onFormChange({
       sport: 'cycling',
-      date,
-      notes,
-      distance,
-      duration,
-      terrain,
-      bikeUsed,
-      airTemp,
-      weather,
+      date: updatedDate,
+      notes: updatedNotes,
+      distance: updatedDistance,
+      duration: updatedDuration,
+      terrain: updatedTerrain,
+      bikeUsed: updatedBikeUsed,
+      airTemp: updatedAirTemp,
+      weather: updatedWeather,
     });
   };
 
@@ -660,14 +727,13 @@ function NewSession({ onHide, controller, setNewSession, session, sessionData })
   const [selectedSport, setSelectedSport] = useState(session);
   const [formData, setFormData] = useState(sessionData || {});
   console.log("Session: " + session)
-  console.log(sessionData)
 
   useEffect(() => {
     if (sessionData && sessionData.sessionID && session == true) {
       console.log("EDITING")
       // EDITING MODE: sessionData is present and has a sessionID
       setSelectedSport(sessionData.sportType.toLowerCase());
-      setFormData({ sessionData }); // Populate formData with a copy of sessionData
+      setFormData(sessionData); // Populate formData with a copy of sessionData
     } else {
       console.log("NEW")
       // NEW SESSION MODE: sessionData is null or doesn't indicate an existing session

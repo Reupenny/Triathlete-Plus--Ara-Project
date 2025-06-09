@@ -35,6 +35,10 @@ class TriathlonController {
         return await this.triathlonData.sortTrainingSessionsByDistance(trainingSessions);
     }
 
+    async searchTrainingSessions(searchType, searchQuery) {
+        return await this.triathlonData.searchTrainingSessions(searchType, searchQuery);
+    }
+
     async handleLogin(username, setLoggedIn, setFirstName) {
         try {
             const loginResult = await this.member.login(username);
@@ -89,6 +93,12 @@ class TriathlonController {
         const trainingSessions = await this.triathlonData.getAllTrainingSessions();
         console.log(trainingSessions)
         return await this.triathlonData.calculateAveragePace(trainingSessions);
+    }
+
+    async calculateTotalDistance() {
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions();
+        console.log(trainingSessions)
+        return await this.triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions)
     }
 
     async handleNewSession(formData, setNewSession) {
