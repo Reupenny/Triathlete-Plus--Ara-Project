@@ -308,22 +308,63 @@ function RunningForm({ onFormChange, formData }) {
         </>
       ) : (<></>)
       }
-      <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
-      <input type="number" step="0.01" id='newDistance' placeholder="Distance (km)" min="0" value={distance} onChange={handleChange} />
-      <input type="number" step="0.01" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" value={duration} onChange={handleChange} />
-      <div className='row'>
-        <select id="newWeather" name="newWeather" value={weather} onChange={handleChange}>
-          <option value="" disabled>Weather Condition</option>
-          <option value="Sunny">Sunny</option>
-          <option value="Overcast">Overcast</option>
-          <option value="Rain">Rain</option>
-          <option value="Misty">Misty</option>
-          <option value="Stormy">Stormy</option>
-        </select>
-        <input type="number" step="0.1" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" value={airTemp} onChange={handleChange} />
+      <div className="input-container">
+        <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
+        <label htmlFor="newDate" className={`floating-label ${date ? 'active' : ''}`}>
+          Date
+        </label>
       </div>
-      <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" value={notes} onChange={handleChange} />
-      <input type="text" id="newShoes" name="newShoes" placeholder="Shoes Used" value={shoesUsed} onChange={handleChange} />
+      <div className='row'>
+        <div className="input-container">
+          <input type="number" step="0.01" id='newDistance' min="0" value={distance} onChange={handleChange} />
+          <label htmlFor="newDistance" className={`floating-label ${distance ? 'active' : ''}`}>
+            Distance (km)
+          </label>
+        </div>
+
+        <div className="input-container">
+          <input type="number" step="0.01" id="newDuration" name="newDuration" min="0" value={duration} onChange={handleChange} />
+          <label htmlFor="newDuration" className={`floating-label ${duration ? 'active' : ''}`}>
+            Duration (minutes)
+          </label>
+        </div>
+      </div>
+      <div className="input-container">
+        <input type="text" id="newShoes" name="newShoes" value={shoesUsed} onChange={handleChange} />
+        <label htmlFor="newShoes" className={`floating-label ${shoesUsed ? 'active' : ''}`}>
+          Shoes Used
+        </label>
+      </div>
+
+      <div className='row'>
+        <div className="input-container">
+          <select id="newWeather" name="newWeather" value={weather} onChange={handleChange}>
+            <option value="" disabled>Weather Condition</option>
+            <option value="Sunny">Sunny</option>
+            <option value="Overcast">Overcast</option>
+            <option value="Rain">Rain</option>
+            <option value="Misty">Misty</option>
+            <option value="Stormy">Stormy</option>
+          </select>
+          <label htmlFor="newWeather" className={`floating-label ${weather ? 'active' : ''}`}>
+            Weather Condition
+          </label>
+        </div>
+        <div className="input-container">
+          <input type="number" step="0.1" id="newAirTemp" name="newAirTemp" min="-10" max="50" value={airTemp} onChange={handleChange} />
+          <label htmlFor="newAirTemp" className={`floating-label ${airTemp ? 'active' : ''}`}>
+            Air temperature (°C)
+          </label>
+        </div>
+
+      </div>
+      <div className="input-container">
+        <textarea type="text" id="newNotes" name="newNotes" value={notes} onChange={handleChange} />
+        <label htmlFor="newNotes" className={`floating-label ${notes ? 'active' : ''}`}>
+          Notes
+        </label>
+      </div>
+
     </>
   );
 }
@@ -374,6 +415,14 @@ function SwimmingForm({ onFormChange, formData }) {
     setLapTimes([...lapTimes, '']);
   };
 
+  const removeLastLapTime = () => {
+    if (lapTimes.length > 1) { // Ensure there's at least one lap time to remove
+      setLapTimes(lapTimes.slice(0, -1));
+    } else if (lapTimes.length === 1) {
+      setLapTimes(['']); // If only one lap, clear it
+    }
+  };
+
   const handleLapTimeChange = (index, value) => {
     const newLapTimes = [...lapTimes];
     newLapTimes[index] = value;
@@ -390,35 +439,67 @@ function SwimmingForm({ onFormChange, formData }) {
         </>
       ) : (<></>)
       }
-      <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
-      <input type="number" step="0.01" id='newLapLength' name='newLapLength' placeholder="Pool Length (meters)" min="0" value={lapLength} onChange={handleChange} />
-      <div className='row'>
-        <select id="newStroke" name="newStroke" value={strokeType} onChange={handleChange}>
-          <option value="" disabled>Stroke Type</option>
-          <option value="Freestyle">Freestyle</option>
-          <option value="Backstroke">Backstroke</option>
-          <option value="Breaststroke">Breaststroke</option>
-          <option value="Butterfly">Butterfly</option>
-          <option value="Sidestroke">Sidestroke</option>
-          <option value="Dog Paddle">Dog Paddle</option>
-        </select>
-        <input type="number" step="0.1" id="newWaterTemp" name="newWaterTemp" placeholder="Water temperature (°C)" min="-10" max="50" value={waterTemp} onChange={handleChange} />
+      <div className="input-container">
+        <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
+        <label htmlFor="newDate" className={`floating-label ${date ? 'active' : ''}`}>
+          Date
+        </label>
       </div>
-      <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" value={notes} onChange={handleChange} />
+      <div className="input-container">
+        <input type="number" step="0.01" id='newLapLength' name='newLapLength' min="0" value={lapLength} onChange={handleChange} />
+        <label htmlFor="newLapLength" className={`floating-label ${lapLength ? 'active' : ''}`}>
+          Pool Length (meters)
+        </label>
+      </div>
+      <div className='row'>
+        <div className="input-container">
+          <select id="newStroke" name="newStroke" value={strokeType} onChange={handleChange}>
+            <option value="" disabled>Stroke Type</option>
+            <option value="Freestyle">Freestyle</option>
+            <option value="Backstroke">Backstroke</option>
+            <option value="Breaststroke">Breaststroke</option>
+            <option value="Butterfly">Butterfly</option>
+            <option value="Sidestroke">Sidestroke</option>
+            <option value="Dog Paddle">Dog Paddle</option>
+          </select>
+          <label htmlFor="newStroke" className={`floating-label ${strokeType ? 'active' : ''}`}>
+            Stroke Type
+          </label>
+        </div>
+        <div className="input-container">
+          <input type="number" step="0.1" id="newWaterTemp" name="newWaterTemp" min="-10" max="50" value={waterTemp} onChange={handleChange} />
+          <label htmlFor="newWaterTemp" className={`floating-label ${waterTemp ? 'active' : ''}`}>
+            Water temperature (°C)
+          </label>
+        </div>
+      </div>
       <div className='row'>
         <div>
           {lapTimes.map((lapTime, index) => (
-            <input
-              key={index}
-              type="number"
-              placeholder={`Lap Time ${index + 1} (seconds)`}
-              value={lapTime}
-              onChange={(e) => handleLapTimeChange(index, e.target.value)}
-            />
+            <div className="input-container" key={index}>
+              <input
+                type="number"
+                id={`lapTime-${index}`}
+                value={lapTime}
+                onChange={(e) => handleLapTimeChange(index, e.target.value)}
+              />
+              <label htmlFor={`lapTime-${index}`} className={`floating-label ${lapTime ? 'active' : ''}`}>
+                Lap Time {index + 1} (seconds)
+              </label>
+            </div>
           ))}
         </div>
-        <i onClick={addLapTime} className='icon icon-add'></i>
-        <i onClick={addLapTime} className='icon icon-minus'></i>
+        <div style={{ width: 'auto' }} >
+          <i onClick={addLapTime} className='icon icon-add'></i>
+          <i onClick={removeLastLapTime} className='icon icon-return'></i>
+        </div>
+
+      </div >
+      <div className="input-container">
+        <textarea type="text" id="newNotes" name="newNotes" value={notes} onChange={handleChange} />
+        <label htmlFor="newNotes" className={`floating-label ${notes ? 'active' : ''}`}>
+          Notes
+        </label>
       </div>
     </>
   );
@@ -492,45 +573,85 @@ function CyclingForm({ onFormChange, formData }) {
         </>
       ) : (<></>)
       }
-      <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
-      <div className='row'>
-        <input type="number" step="0.01" id='newDistance' placeholder="Distance (km)" min="0" value={distance} onChange={handleChange} />
-        <input type="number" step="0.01" id="newDuration" name="newDuration" placeholder="Duration (minutes)" min="0" value={duration} onChange={handleChange} />
+      <div className="input-container">
+        <input type="date" id="newDate" name="newDate" value={date} onChange={handleChange} />
+        <label htmlFor="newDate" className={`floating-label ${date ? 'active' : ''}`}>
+          Date
+        </label>
       </div>
       <div className='row'>
-        <select id="newTerrain" name="newTerrain" value={terrain} onChange={handleChange}>
-          <option value="" disabled>Terrain</option>
-          <option disabled>--- Paved Surfaces ---</option>
-          <option value="Flat Road">Flat Road</option>
-          <option value="Rolling Hills">Rolling Hills</option>
-          <option value="Hilly Road">Hilly Road</option>
-          <option value="Smooth Pavement">Smooth Pavement</option>
-          <option value="Rough Pavement">Rough Pavement</option>
-          <option value="Bike Path">Bike Path</option>
-          <option disabled>--- Unpaved Surfaces ---</option>
-          <option value="Gravel Road">Gravel Road</option>
-          <option value="Dirt Road">Dirt Road</option>
-          <option value="Singletrack (MTB)">Singletrack (MTB)</option>
-          <option disabled>--- Specialised/Mixed ---</option>
-          <option value="Cobblestone">Cobblestone</option>
-          <option value="Mixed Terrain">Mixed Terrain</option>
-        </select>
-        <input type="text" id="newBikeUsed" name="newBikeUsed" placeholder="Bike Used" value={bikeUsed} onChange={handleChange} />
+        <div className="input-container">
+          <input type="number" step="0.01" id='newDistance' min="0" value={distance} onChange={handleChange} />
+          <label htmlFor="newDistance" className={`floating-label ${distance ? 'active' : ''}`}>
+            Distance (km)
+          </label>
+        </div>
+        <div className="input-container">
+          <input type="number" step="0.01" id="newDuration" name="newDuration" min="0" value={duration} onChange={handleChange} />
+          <label htmlFor="newDuration" className={`floating-label ${duration ? 'active' : ''}`}>
+            Duration (minutes)
+          </label>
+        </div>
       </div>
       <div className='row'>
-        <select id="newWeather" name="newWeather" value={weather} onChange={handleChange}>
-          <option value="" disabled>Weather Condition</option>
-          <option value="Sunny">Sunny</option>
-          <option value="Overcast">Overcast</option>
-          <option value="Rain">Rain</option>
-          <option value="Misty">Misty</option>
-          <option value="Headwind">Headwind</option>
-          <option value="Tailwind">Tailwind</option>
-          <option value="Crosswind">Crosswind</option>
-        </select>
-        <input type="number" step="0.1" id="newAirTemp" name="newAirTemp" placeholder="Air temperature (°C)" min="-10" max="50" value={airTemp} onChange={handleChange} />
+        <div className="input-container">
+          <select id="newTerrain" name="newTerrain" value={terrain} onChange={handleChange}>
+            <option value="" disabled>Terrain</option>
+            <option disabled>--- Paved Surfaces ---</option>
+            <option value="Flat Road">Flat Road</option>
+            <option value="Rolling Hills">Rolling Hills</option>
+            <option value="Hilly Road">Hilly Road</option>
+            <option value="Smooth Pavement">Smooth Pavement</option>
+            <option value="Rough Pavement">Rough Pavement</option>
+            <option value="Bike Path">Bike Path</option>
+            <option disabled>--- Unpaved Surfaces ---</option>
+            <option value="Gravel Road">Gravel Road</option>
+            <option value="Dirt Road">Dirt Road</option>
+            <option value="Singletrack (MTB)">Singletrack (MTB)</option>
+            <option disabled>--- Specialised/Mixed ---</option>
+            <option value="Cobblestone">Cobblestone</option>
+            <option value="Mixed Terrain">Mixed Terrain</option>
+          </select>
+          <label htmlFor="newTerrain" className={`floating-label ${terrain ? 'active' : ''}`}>
+            Terrain
+          </label>
+        </div>
+        <div className="input-container">
+          <input type="text" id="newBikeUsed" name="newBikeUsed" value={bikeUsed} onChange={handleChange} />
+          <label htmlFor="newBikeUsed" className={`floating-label ${bikeUsed ? 'active' : ''}`}>
+            Bike Used
+          </label>
+        </div>
       </div>
-      <textarea type="text" id="newNotes" name="newNotes" placeholder="Notes" value={notes} onChange={handleChange} />
+      <div className='row'>
+        <div className="input-container">
+          <select id="newWeather" name="newWeather" value={weather} onChange={handleChange}>
+            <option value="" disabled>Weather Condition</option>
+            <option value="Sunny">Sunny</option>
+            <option value="Overcast">Overcast</option>
+            <option value="Rain">Rain</option>
+            <option value="Misty">Misty</option>
+            <option value="Headwind">Headwind</option>
+            <option value="Tailwind">Tailwind</option>
+            <option value="Crosswind">Crosswind</option>
+          </select>
+          <label htmlFor="newWeather" className={`floating-label ${weather ? 'active' : ''}`}>
+            Weather Condition
+          </label>
+        </div>
+        <div className="input-container">
+          <input type="number" step="0.1" id="newAirTemp" name="newAirTemp" min="-10" max="50" value={airTemp} onChange={handleChange} />
+          <label htmlFor="newAirTemp" className={`floating-label ${airTemp ? 'active' : ''}`}>
+            Air temperature (°C)
+          </label>
+        </div>
+      </div>
+      <div className="input-container">
+        <textarea type="text" id="newNotes" name="newNotes" value={notes} onChange={handleChange} />
+        <label htmlFor="newNotes" className={`floating-label ${notes ? 'active' : ''}`}>
+          Notes
+        </label>
+      </div>
     </>
   );
 }
@@ -604,7 +725,7 @@ function MainPanel({ controller, onEditSession, onViewSession, trainingSessions2
       // Calculate swimming data for each session if it's a swimming session
       const sessionsWithCalculatedData = await Promise.all(sessions.map(async (entry) => {
         if (entry.sportType === 'Swimming') {
-          const swimmingDistanceValue = await controller.swimmingSessionDistance(entry.lapLength, entry.laps);
+          const swimmingDistanceValue = await controller.swimmingSessionDistance(entry.lapLength, entry.lapTimes);
           const swimmingDurationValue = await controller.swimmingSessionDuration(entry.lapTimes);
           return {
             ...entry,

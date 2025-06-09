@@ -141,8 +141,8 @@ class TriathlonController {
         }
     }
 
-    async swimmingSessionDistance(lapLength, laps) {
-        return this.triathlonData.getTotalDistance(lapLength, laps)
+    async swimmingSessionDistance(lapLength, lapTimes) {
+        return this.triathlonData.getTotalDistance(lapLength, lapTimes)
     }
     async swimmingSessionDuration(lapTimes) {
         return this.triathlonData.getTotalDuration(lapTimes)

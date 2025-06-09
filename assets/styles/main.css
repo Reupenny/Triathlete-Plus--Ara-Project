@@ -539,6 +539,36 @@ tbody tr:hover {
     padding: 0 2em;
 }
 
+
+/* Forms */
+
+.input-container {
+    position: relative;
+    margin-bottom: .5rem;
+}
+
+.floating-label {
+    position: absolute;
+    top: .5rem;
+    left: 0.75rem;
+    font-size: .9rem;
+    color: #555;
+    transition: all 0.2s ease-out;
+    pointer-events: none;
+    background-color: white;
+    padding: 0 0.25rem;
+}
+
+.floating-label.active {
+    top: -0.5rem;
+    font-size: 0.75rem;
+    color: #999;
+}
+
+
+
+
+
 @media screen and (min-width: 62em) {
     #root {
         max-width: 100%;
