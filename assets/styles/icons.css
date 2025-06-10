@@ -85,10 +85,12 @@ Generated using nucleoapp.com
 
 .icon-settings:hover {
   transform: rotate(45deg);
+  pointer-events: visible;
 }
 
 .icon-add {
   padding-bottom: 10px;
+  pointer-events: visible;
 }
 
 .icon-add:hover {
@@ -109,5 +111,15 @@ Generated using nucleoapp.com
 
 .icon-info:hover {
   color: var(--blue);
+  transform: scale(1.1);
+}
+
+.icon-return:hover {
+  color: var(--pink);
+  transform: scale(1.1);
+}
+
+.icon-close:hover {
+  color: var(--pink);
   transform: scale(1.1);
 }

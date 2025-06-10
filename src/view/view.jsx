@@ -54,32 +54,6 @@ function Register({ onHide, onSignUp }) {
     </>
   );
 }
-function Settings({ onHide }) {
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const username = document.getElementById('registerUsername').value;
-    const fName = document.getElementById('fName').value;
-    const lName = document.getElementById('lName').value;
-    onSignUp(username, fName, lName);
-  };
-  return (
-    <>
-      <div id="hide" onClick={onHide}></div>
-      <div className="box" id="settings">
-        <div>
-          <h2>User Settings</h2>
-          <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
-        </div>
-        <form id='registerForm' onSubmit={handleSubmit}>
-          <input type="text" id="registerUsername" name="Username" placeholder="Username" required />
-          <input type="text" id="fName" name="fName" placeholder="First Name" required />
-          <input type="text" id="lName" name="lName" placeholder="Last Name" required />
-          <input type="submit" value="Save" id='settings-btn' />
-        </form>
-      </div>
-    </>
-  );
-}
 
 
 function ViewSession({ onHide, session, onEditSession, controller }) {
@@ -88,17 +62,29 @@ function ViewSession({ onHide, session, onEditSession, controller }) {
   const member = session.memberID
   const sessionDate = new Date(session.date)
   const formattedDate = sessionDate.toLocaleDateString('en-NZ')
+  const [historyCheckResult, setHistoryCheckResult] = useState(false);
 
   useEffect(() => {
     if (session.sportType === 'Swimming') {
       (async () => {
-        let swimmingDistanceValue = await controller.swimmingSessionDistance(session.lapLength, session.laps);
+        let swimmingDistanceValue = await controller.swimmingSessionDistance(session.lapLength, session.lapTimes);
         let swimmingDurationValue = await controller.swimmingSessionDuration(session.lapTimes);
         setSwimmingDistance(swimmingDistanceValue);
         setSwimmingDuration(swimmingDurationValue);
         console.log('sets sessions')
       })();
     }
+    async function fetchHistoryCheck() {
+      try {
+        const result = await controller.checkHistory(session.sessionID);
+        setHistoryCheckResult(result);
+      } catch (error) {
+        console.error("Error checking history:", error);
+        // Handle the error appropriately (e.g., set an error state)
+      }
+    }
+
+    fetchHistoryCheck();
   }, [session, controller]);
 
   const handleEdit = (session) => {
@@ -106,6 +92,10 @@ function ViewSession({ onHide, session, onEditSession, controller }) {
   };
   const handleDelete = (sessionID) => {
     controller.deleteTrainingSession(sessionID)
+  }
+
+  const handleHistory = (sessionID) => {
+    controller.restoreHistory(sessionID, onHide)
   }
   return (
     <>
@@ -115,6 +105,10 @@ function ViewSession({ onHide, session, onEditSession, controller }) {
           <div>
             <h2 className={session.sportType + ' sport-type'}><i className={'icon icon-' + session.sportType}></i> {session.sportType}</h2>
             <h4 className='session-date'>{formattedDate}</h4><br />
+          </div>
+          <div>
+            <p>{"Session: " + session.sessionID}</p>
+            <p>{"Member: " + member.memberID}</p>
           </div>
           <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
         </div>
@@ -147,49 +141,64 @@ function ViewSession({ onHide, session, onEditSession, controller }) {
             )}
           </div>
           <div>
-            {session.sportType === 'Swimming' && (
-              <>
-                <span className='end-label'>{swimmingDuration} min</span>
-              </>
-            )
-            }
-            {session.sportType !== 'Swimming' && (
-              <>
-                <span className='end-label'>{session.duration % 1 === 0 ? session.duration : session.duration.toFixed(2)} min</span>
-              </>
-            )
-            }
-          </div></div><br />
 
+          </div></div><br />
         {session.sportType === 'Swimming' ? (
-          <>
-            <h4>Pool Length: </h4> <p>{session.lapLength + "m"}</p><br />
-            <h4>Laps: </h4> <p>{session.laps}</p><br />
-            <h4>Total Distance: </h4> <p>{session.duration}</p><br />
-            <h4>Stroke Type: </h4> <p>{session.strokeType}</p><br />
-            <h4>Stroke Type: </h4> <p>{session.strokeType}</p><br />
+          <><br />
+            <div className='card'> <p>swimming time</p> <h4>{swimmingDuration} Minutes</h4></div>
+            <div className='card'> <p>Total Distance</p> <h4>{swimmingDistance} Kilometers</h4></div>
+            <div className='row'>
+              <div className='card'> <p>Pool Length</p> <h4>{session.lapLength} Meters</h4></div>
+              <div className='card'> <p>Laps</p> <h4>{session.laps}</h4></div>
+            </div>
+            <div className='row'>
+              <div className='card'> <p>Water temperature</p> <h4>{session.waterTemp}°C</h4></div>
+              <div className='card'> <p>Stroke</p> <h4>{session.strokeType}</h4></div>
+            </div>
           </>
         ) : session.sportType === 'Running' ? (
           <>
-            <p>Shoes Used: {session.shoesUsed}</p>
-            <p>Route: {session.route}</p>
+            <div className='card'> <p>Duration</p> <h4>{session.duration % 1 === 0 ? session.duration : session.duration.toFixed(2)} Minutes</h4></div>
+            <div className='card'> <p>Distance</p> <h4>{session.distance % 1 === 0 ? session.distance : session.distance.toFixed(2)} Kilometers</h4></div>
+
+            <div className='row'>
+              <div className='card'> <p>Temperature</p> <h4>{session.airTemp}°C</h4></div>
+              <div className='card'> <p>Weather</p> <h4>{session.weather}</h4></div>
+            </div>
+            <div className='card'> <p>Shoes</p> <h4>{session.shoesUsed}</h4></div>
           </>
         ) : session.sportType === 'Cycling' ? (
           <>
-            <p>Bike Used: {session.bikeUsed}</p>
-            <p>Terrain: {session.terrain}</p>
+            <div className='card'> <p>Duration</p> <h4>{session.duration % 1 === 0 ? session.duration : session.duration.toFixed(2)} Minutes</h4></div>
+            <div className='card'> <p>Distance</p> <h4>{session.distance % 1 === 0 ? session.distance : session.distance.toFixed(2)} Kilometers</h4></div>
+            <div className='row'>
+              <div className='card'> <p>Bike</p> <h4>{session.bikeUsed}</h4></div>
+              <div className='card'> <p>Terrain</p> <h4>{session.terrain}</h4></div>
+            </div>
+            <div className='row'>
+              <div className='card'> <p>Temperature</p> <h4>{session.airTemp}°C</h4></div>
+              <div className='card'> <p>Weather</p> <h4>{session.weather}</h4></div>
+            </div>
           </>
         ) : (
-          // Optional: What to render if sport doesn't match any of the above
+          // Rendered if sport doesn't match any of the above
           <p>Sport details not available or unknown sport type.</p>
         )}
-        <p>{"Session ID: " + session.sessionID}</p>
-        <p>{"Member ID: " + member.memberID}</p><br />
-        <h4>Notes:</h4> <p>{session.notes}</p>
         <br />
-        <div className='popup-edit'>
-          <i className='icon icon-edit' onClick={() => handleEdit(session)}></i>
-          <i className='icon icon-trash' onClick={() => handleDelete(session.sessionID)}></i>
+        <p>Notes</p>
+        <div className='card row'><p>{session.notes}</p></div>
+        <br />
+        <div className='row'>
+          {historyCheckResult ? (
+            <i className='icon icon-return' onClick={() => handleHistory(session.sessionID)}></i>
+          ) : (
+            null
+          )}
+          <div className='popup-edit'>
+            <i className='icon icon-edit' onClick={() => handleEdit(session)}></i>
+            <i className='icon icon-trash' onClick={() => handleDelete(session.sessionID)}></i>
+
+          </div>
         </div>
       </div>
     </>
@@ -227,7 +236,70 @@ function AllSessionData({ controller }) {
   );
 }
 
-function UserPage({ logout, onNewSession, firstName, settings, controller, trainingSessions }) {
+function UserPage({ logout, onNewSession, firstName, controller, setTrainingSessions }) {
+  // const [trainingSessions, setTrainingSessions] = useState([]);
+  const [sortBy, setSortBy] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [searchType, setSearchType] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const fetchTrainingSessions = async () => {
+      let sessions = await controller.getAllTrainingSessions();
+
+      if (searchType && searchQuery) {
+        console.log(searchType)
+        sessions = await controller.searchTrainingSessions(searchType, searchQuery);
+      }
+
+      // Calculate swimming data for each session if it's a swimming session
+      const sessionsWithCalculatedData = await Promise.all(sessions.map(async (entry) => {
+        if (entry.sportType === 'Swimming') {
+          const swimmingDistanceValue = await controller.swimmingSessionDistance(entry.lapLength, entry.lapTimes);
+          const swimmingDurationValue = await controller.swimmingSessionDuration(entry.lapTimes);
+          return {
+            ...entry,
+            calculatedSwimmingDistance: swimmingDistanceValue,
+            calculatedSwimmingDuration: swimmingDurationValue,
+          };
+        }
+        return entry;
+      }));
+
+      let sortedSessions = sessionsWithCalculatedData;
+      if (sortBy) {
+        switch (sortBy) {
+          case 'date':
+            sortedSessions = await controller.sortTrainingSessionsByDate(sortedSessions);
+            break;
+          case 'sport':
+            sortedSessions = await controller.sortTrainingSessionsBySportType(sortedSessions);
+            break;
+          case 'distance':
+            sortedSessions = await controller.sortTrainingSessionsByDistance(sortedSessions);
+            break;
+          default:
+            break;
+        }
+        if (sortDirection === 'desc') {
+          sortedSessions = sortedSessions.reverse();
+        }
+      }
+      setTrainingSessions(sortedSessions);
+
+    };
+
+    fetchTrainingSessions();
+  }, [controller, sortBy, sortDirection, searchType, searchQuery]);
+
+  const handleSort = (type) => {
+    if (sortBy === type) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(type);
+      setSortDirection('asc');
+    }
+  };
   return (
     <div id='userPage'>
       <div>
@@ -241,13 +313,17 @@ function UserPage({ logout, onNewSession, firstName, settings, controller, train
           <button className='orange button-big' id='cycling' onClick={() => onNewSession('cycling')}>Cycling</button>
         </div>
 
-        {/* Sort by should be here */}
+        <div className='row'> <h3>Sort by: </h3>
+          <button onClick={() => handleSort('date')}>Date</button>
+          <button onClick={() => handleSort('sport')}>Type</button>
+          <button onClick={() => handleSort('distance')}>Distance</button>
+        </div>
         <form>
           <div className="input-container">
-            <label htmlFor="newWeather">
+            <label htmlFor="newSearchType">
               Search Type
             </label>
-            <select id="newWeather" name="newWeather">
+            <select id="newSearchType" name="newSearchType" onChange={(e) => setSearchType(e.target.value)}>
               <option value="" disabled>Search Type</option>
               <option value="notes">Notes</option>
               <option value="bikeUsed">Bike</option>
@@ -257,16 +333,19 @@ function UserPage({ logout, onNewSession, firstName, settings, controller, train
               <option value="sportType">Sport</option>
             </select>
           </div>
-          <input type="text" id="searchSessions" placeholder="Search training sessions" />
-
+          <input
+            type="text"
+            id="searchSessions"
+            placeholder="Search training sessions"
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </form>
-        <AllSessionData controller={controller} trainingSessions={trainingSessions} />
+        <AllSessionData controller={controller} />
       </div>
 
 
       <div className='row'>
         <p>{firstName}</p>
-        {/* <button onClick={settings} className='icon icon-settings'></button> */}
         <button onClick={logout}>Logout</button>
       </div>
     </div>
@@ -277,8 +356,8 @@ function RunningForm({ onFormChange, formData }) {
   const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'));
   const [distance, setDistance] = useState(formData?.distance || '');
   const [duration, setDuration] = useState(formData?.duration || '');
-  const [weather, setWeather] = useState(formData?.weatherCondition || '');
-  const [airTemp, setAirTemp] = useState(formData?.airTemperature || '');
+  const [weather, setWeather] = useState(formData?.weather || '');
+  const [airTemp, setAirTemp] = useState(formData?.airTemp || '');
   const [notes, setNotes] = useState(formData?.notes || '');
   const [shoesUsed, setShoesUsed] = useState(formData?.shoesUsed || '');
   const member = formData?.memberID || null
@@ -327,7 +406,7 @@ function RunningForm({ onFormChange, formData }) {
     }
     // Send form data to parent component with the most recent values
     onFormChange({
-      sport: 'running',
+      sportType: 'Running',
       date: updatedDate,
       distance: updatedDistance,
       duration: updatedDuration,
@@ -412,7 +491,7 @@ function RunningForm({ onFormChange, formData }) {
 function SwimmingForm({ onFormChange, formData }) {
   const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'));
   const [lapLength, setLapLength] = useState(formData?.lapLength || '');
-  const [waterTemp, setWaterTemp] = useState(formData?.waterTemperature || '');
+  const [waterTemp, setWaterTemp] = useState(formData?.waterTemp || '');
   const [notes, setNotes] = useState(formData?.notes || '');
   const [strokeType, setStroke] = useState(formData?.strokeType || 'Freestyle');
   const [lapTimes, setLapTimes] = useState(formData?.lapTimes || ['']);
@@ -452,7 +531,7 @@ function SwimmingForm({ onFormChange, formData }) {
     }
     // Send form data to parent component with the most recent values
     onFormChange({
-      sport: 'swimming',
+      sportType: 'Swimming',
       date: updatedDate,
       notes: updatedNotes,
       lapLength: updatedLapLength,
@@ -561,8 +640,8 @@ function CyclingForm({ onFormChange, formData }) {
   const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'));
   const [distance, setDistance] = useState(formData?.distance || '');
   const [duration, setDuration] = useState(formData?.duration || '');
-  const [weather, setWeather] = useState(formData?.weatherCondition || '');
-  const [airTemp, setAirTemp] = useState(formData?.airTemperature || '');
+  const [weather, setWeather] = useState(formData?.weather || '');
+  const [airTemp, setAirTemp] = useState(formData?.airTemp || '');
   const [notes, setNotes] = useState(formData?.notes || '');
   const [bikeUsed, setBikeUsed] = useState(formData?.bikeUsed || '');
   const [terrain, setTerrain] = useState(formData?.terrain || '');
@@ -618,7 +697,7 @@ function CyclingForm({ onFormChange, formData }) {
     }
     // Send form data to parent component with the most recent values
     onFormChange({
-      sport: 'cycling',
+      sportType: 'Cycling',
       date: updatedDate,
       notes: updatedNotes,
       distance: updatedDistance,
@@ -779,64 +858,7 @@ function NewSession({ onHide, controller, setNewSession, session, sessionData })
   );
 }
 
-function MainPanel({ controller, onEditSession, onViewSession, trainingSessions2 }) {
-  const [trainingSessions, setTrainingSessions] = useState([]);
-  const [sortBy, setSortBy] = useState(null);
-  const [sortDirection, setSortDirection] = useState('asc');
-
-  useEffect(() => {
-    const fetchTrainingSessions = async () => {
-      let sessions = await controller.getAllTrainingSessions();
-
-      // Calculate swimming data for each session if it's a swimming session
-      const sessionsWithCalculatedData = await Promise.all(sessions.map(async (entry) => {
-        if (entry.sportType === 'Swimming') {
-          const swimmingDistanceValue = await controller.swimmingSessionDistance(entry.lapLength, entry.lapTimes);
-          const swimmingDurationValue = await controller.swimmingSessionDuration(entry.lapTimes);
-          return {
-            ...entry,
-            calculatedSwimmingDistance: swimmingDistanceValue,
-            calculatedSwimmingDuration: swimmingDurationValue,
-          };
-        }
-        return entry;
-      }));
-
-      let sortedSessions = sessionsWithCalculatedData;
-      if (sortBy) {
-        switch (sortBy) {
-          case 'date':
-            sortedSessions = await controller.sortTrainingSessionsByDate(sortedSessions);
-            break;
-          case 'sport':
-            sortedSessions = await controller.sortTrainingSessionsBySportType(sortedSessions);
-            break;
-          case 'distance':
-            sortedSessions = await controller.sortTrainingSessionsByDistance(sortedSessions);
-            break;
-          default:
-            break;
-        }
-        if (sortDirection === 'desc') {
-          sortedSessions = sortedSessions.reverse();
-        }
-      }
-      setTrainingSessions(sortedSessions);
-      trainingSessions2 = sortedSessions;
-      console.log(trainingSessions2);
-    };
-
-    fetchTrainingSessions();
-  }, [controller, sortBy, sortDirection]);
-
-  const handleSort = (type) => {
-    if (sortBy === type) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(type);
-      setSortDirection('asc');
-    }
-  };
+function MainPanel({ controller, onEditSession, onViewSession, trainingSessions }) {
 
   const handleEdit = (session) => {
     onEditSession(session); // Call the passed prop to open modal in TriathlonView
@@ -853,11 +875,6 @@ function MainPanel({ controller, onEditSession, onViewSession, trainingSessions2
         <div className='box' >
           <div>
             <h2>Training Sessions</h2>
-            <div className='row'> <h3>Sort by: </h3>
-              <button onClick={() => handleSort('date')}>Date</button>
-              <button onClick={() => handleSort('sport')}>Type</button>
-              <button onClick={() => handleSort('distance')}>Distance</button>
-            </div>
           </div>
           <table>
             <thead>
@@ -935,11 +952,11 @@ function MainPanel({ controller, onEditSession, onViewSession, trainingSessions2
   );
 }
 
-function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, settings, controller, trainingSessions }) {
+function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, controller, setTrainingSessions }) {
   return (
     <>
       <aside className='box' >
-        {loggedIn ? <UserPage trainingSessions={trainingSessions} controller={controller} logout={logout} onNewSession={onNewSession} firstName={firstName} settings={settings} /> : <Login onRegister={onRegister} onSubmit={onSubmit} />}
+        {loggedIn ? <UserPage setTrainingSessions={setTrainingSessions} controller={controller} logout={logout} onNewSession={onNewSession} firstName={firstName} /> : <Login onRegister={onRegister} onSubmit={onSubmit} />}
       </aside>
     </>
   );
@@ -953,7 +970,6 @@ function TriathlonView({ controller }) {
   const [newSessionData, setNewSessionData] = useState(null);
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem('LoggedIn') === 'true');
   const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : ""); // Show users name
-  const [changeSettings, setChangeSettings] = useState(false);
   const [trainingSessions, setTrainingSessions] = useState([]);
 
   const handleRegister = () => {
@@ -963,7 +979,6 @@ function TriathlonView({ controller }) {
   const handleHide = () => {
     setShowRegister(false);
     setNewSession(false);
-    setChangeSettings(false);
     setViewSession(null)
   };
   const handleSignUp = (username, fName, lName) => {
@@ -974,9 +989,6 @@ function TriathlonView({ controller }) {
   };
   const handlelogout = () => {
     controller.handleLogout(setLoggedIn)
-  }
-  const handleChangeSettings = () => {
-    setChangeSettings(true);
   }
 
 
@@ -1007,14 +1019,13 @@ function TriathlonView({ controller }) {
       <Toaster richColors position="top-center" />
 
       {/* Popups */}
-      {changeSettings ? (<Settings onHide={handleHide} />) : null}
       {newSession ? (<NewSession onHide={handleHide} controller={controller} setNewSession={setNewSession} session={newSession} sessionData={newSessionData} />) : null}
       {showRegister ? <Register onHide={handleHide} onSignUp={handleSignUp} /> : null}
       {viewSessionData ? (<ViewSession session={viewSessionData} onHide={handleHide} controller={controller} onEditSession={handleOpenEditModal} />) : null}
 
       {/* Main view */}
-      <SidePanel trainingSessions={trainingSessions} onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleOpenNewSessionModal} firstName={firstName} settings={handleChangeSettings} controller={controller} />
-      {loggedIn ? (<MainPanel trainingSessions2={handleSetTrainingSessions} controller={controller} onEditSession={handleOpenEditModal} onViewSession={handleViewSession} />) : null}
+      <SidePanel setTrainingSessions={handleSetTrainingSessions} onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleOpenNewSessionModal} firstName={firstName} controller={controller} />
+      {loggedIn ? (<MainPanel trainingSessions={trainingSessions} controller={controller} onEditSession={handleOpenEditModal} onViewSession={handleViewSession} />) : null}
     </>
   );
 }

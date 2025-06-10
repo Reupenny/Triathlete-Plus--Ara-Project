@@ -15,7 +15,7 @@ export class TriathlonData {
         await TriathlonData.database.init()
     }
 
-    async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature) {
+    async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemp) {
         // Handle missing date:  If no date is provided, use the current date
         if (!date) {
             // Use today's date in YYYY-MM-DD format
@@ -31,15 +31,15 @@ export class TriathlonData {
         if (typeof strokeType !== 'string') {
             throw new Error("Stroke Type must be a string.");
         }
-        // Water Temperature Type Check:  Ensure waterTemperature is a number
-        if (typeof waterTemperature !== 'number') {
+        // Water Temperature Type Check:  Ensure waterTemp is a number
+        if (typeof waterTemp !== 'number') {
             throw new Error("Water temperature must be a number.");
         }
         // Range Checks:  Validate that numeric values are within acceptable ranges
         if (lapLength <= 0) {
             throw new Error("Lap length must be greater than zero.");
         }
-        if (waterTemperature < 0 || waterTemperature > 40) {
+        if (waterTemp < 0 || waterTemp > 40) {
             throw new Error("Water temperature must be between 0 and 40 degrees Celsius.");
         }
         // Format Validation Date
@@ -62,7 +62,7 @@ export class TriathlonData {
         }
         try {
             const sessionID = SwimmingSession.generateSessionID();
-            const newSession = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemperature, sessionID);
+            const newSession = new SwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemp, sessionID);
 
             const sessionData = {
                 sessionID: newSession.sessionID,
@@ -74,7 +74,7 @@ export class TriathlonData {
                 strokeType: newSession.strokeType,
                 laps: newSession.laps,
                 lapTimes: newSession.lapTimes,
-                waterTemperature: newSession.waterTemperature,
+                waterTemp: newSession.waterTemp,
             };
             await TriathlonData.database.addData("TrainingSessions", sessionData);
             return newSession;
@@ -83,7 +83,7 @@ export class TriathlonData {
         }
     }
 
-    async CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition) {
+    async CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemp, weather) {
         // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
         if (!date) {
             // Use today's date in YYYY-MM-DD format
@@ -111,23 +111,23 @@ export class TriathlonData {
         if (typeof bikeUsed !== 'string') {
             throw new Error("Bike Used must be a string.");
         }
-        if (!weatherCondition) {
-            weatherCondition = "";
+        if (!weather) {
+            weather = "";
         }
-        if (weatherCondition && typeof weatherCondition !== 'string') {
+        if (weather && typeof weather !== 'string') {
             throw new Error("Weather Condition must be a string.");
         }
         // Range Checks
         if (distance <= 0) {
             throw new Error("Distance must be greater than zero.");
         }
-        if (!airTemperature) {
-            airTemperature = "NA"
+        if (!airTemp) {
+            airTemp = "NA"
         }
-        if (typeof airTemperature !== 'number' && airTemperature !== "NA") {
+        if (typeof airTemp !== 'number' && airTemp !== "NA") {
             throw new Error("Air temperature must be a number.");
         }
-        if (airTemperature !== "NA" && (airTemperature < -20 || airTemperature > 50)) {
+        if (airTemp !== "NA" && (airTemp < -20 || airTemp > 50)) {
             throw new Error("Air temperature must be between -20 and 50 degrees Celsius.");
         }
 
@@ -140,7 +140,7 @@ export class TriathlonData {
 
         try {
             const sessionID = CyclingSession.generateSessionID();
-            const newSession = new CyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemperature, weatherCondition, sessionID);
+            const newSession = new CyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemp, weather, sessionID);
             const sessionData = {
                 sessionID: newSession.sessionID,
                 memberID: newSession.memberID,
@@ -151,8 +151,8 @@ export class TriathlonData {
                 duration: newSession.duration,
                 terrain: newSession.terrain,
                 bikeUsed: newSession.bikeUsed,
-                airTemperature: newSession.airTemperature,
-                weatherCondition: weatherCondition
+                airTemp: newSession.airTemp,
+                weather: weather
             };
             await TriathlonData.database.addData("TrainingSessions", sessionData);
             return newSession;
@@ -161,7 +161,7 @@ export class TriathlonData {
         }
     }
 
-    async CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition) {
+    async CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemp, weather) {
         // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
         if (!date) {
             // Use today's date in YYYY-MM-DD format
@@ -183,23 +183,23 @@ export class TriathlonData {
         if (typeof shoesUsed !== 'string') {
             throw new Error("Shoes Used must be a string.");
         }
-        if (!weatherCondition) {
-            weatherCondition = "";
+        if (!weather) {
+            weather = "";
         }
-        if (weatherCondition && typeof weatherCondition !== 'string') {
+        if (weather && typeof weather !== 'string') {
             throw new Error("Weather Condition must be a string.");
         }
         // Range Checks
         if (distance <= 0) {
             throw new Error("Distance must be greater than zero.");
         }
-        if (!airTemperature) {
-            airTemperature = "NA"
+        if (!airTemp) {
+            airTemp = "NA"
         }
-        if (typeof airTemperature !== 'number' && airTemperature !== "NA") {
+        if (typeof airTemp !== 'number' && airTemp !== "NA") {
             throw new Error("Air temperature must be a number.");
         }
-        if (airTemperature !== "NA" && (airTemperature < -20 || airTemperature > 50)) {
+        if (airTemp !== "NA" && (airTemp < -20 || airTemp > 50)) {
             throw new Error("Air temperature must be between -20 and 50 degrees Celsius.");
         }
 
@@ -211,7 +211,7 @@ export class TriathlonData {
         }
         try {
             const sessionID = RunningSession.generateSessionID();
-            const newSession = new RunningSession(date, notes, distance, duration, shoesUsed, airTemperature, weatherCondition, sessionID);
+            const newSession = new RunningSession(date, notes, distance, duration, shoesUsed, airTemp, weather, sessionID);
             const sessionData = {
                 sessionID: newSession.sessionID,
                 memberID: newSession.memberID,
@@ -221,8 +221,8 @@ export class TriathlonData {
                 distance: newSession.distance,
                 duration: newSession.duration,
                 shoesUsed: newSession.shoesUsed,
-                airTemperature: newSession.airTemperature,
-                weatherCondition: newSession.weatherCondition
+                airTemp: newSession.airTemp,
+                weather: newSession.weather
             };
             await TriathlonData.database.addData("TrainingSessions", sessionData);
             return newSession;
@@ -261,7 +261,7 @@ export class TriathlonData {
         }
         const sessionsWithDistance = trainingSessions.map(session => {
             if (session.sportType === "Swimming") {
-                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemperature);
+                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemp);
                 session.distance = swimmingSession.getTotalDistance();
             }
             return session;
@@ -279,7 +279,7 @@ export class TriathlonData {
         trainingSessions.forEach(session => {
             let distance = session.distance;
             if (session.sportType === "Swimming") {
-                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemperature);
+                const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemp);
                 distance = this.getTotalDistance(session.lapLength, session.lapTimes)
             }
             if (distance) {
@@ -301,7 +301,7 @@ export class TriathlonData {
             let distance = session.distance
             let duration = session.duration
             if (session.sportType === "Swimming") {
-                // const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemperature);
+                // const swimmingSession = new SwimmingSession(session.date, session.notes, session.lapLength, session.strokeType, session.lapTimes, session.waterTemp);
                 distance = this.getTotalDistance(session.lapLength, session.lapTimes)
                 duration = this.getTotalDuration(session.lapTimes)
             }
@@ -379,6 +379,10 @@ export class TriathlonData {
         Object.assign(sessionToEdit, updatedSession)
         await TriathlonData.database.updateData("TrainingSessions", sessionToEdit)
         return sessionToEdit
+    }
+
+    async checkHistory(sessionID) {
+        return this.history.getSessionFromHistory(sessionID) ? true : false
     }
 
     async restoreTrainingSession(sessionID) {

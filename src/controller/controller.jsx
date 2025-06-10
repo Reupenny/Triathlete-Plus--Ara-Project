@@ -103,7 +103,7 @@ class TriathlonController {
 
     async handleNewSession(formData, setNewSession) {
         try {
-            if (formData.sport === 'swimming') {
+            if (formData.sportType === 'Swimming') {
                 const parsedLapLength = parseFloat(formData.lapLength);
                 const parsedWaterTemp = parseFloat(formData.waterTemp);
                 const parsedLapTimes = formData.lapTimes.map(lapTime => parseFloat(lapTime));
@@ -112,7 +112,7 @@ class TriathlonController {
                 console.log('Swimming session created successfully');
                 toast.success('Swimming Session Created');
                 setNewSession(false)
-            } else if (formData.sport === 'cycling') {
+            } else if (formData.sportType === 'Cycling') {
                 const { date, notes, distance, duration, terrain, bikeUsed, airTemp, weather, } = formData;
                 const parsedDistance = parseFloat(distance);
                 const parsedDuration = parseFloat(duration);
@@ -121,7 +121,7 @@ class TriathlonController {
                 console.log('Cycling session created successfully');
                 toast.success('Cycling Session Created');
                 setNewSession(false)
-            } else if (formData.sport === 'running') {
+            } else if (formData.sportType === 'Running') {
                 const { date, notes, distance, duration, shoesUsed, weather, airTemp } = formData;
                 const parsedDistance = parseFloat(distance);
                 const parsedDuration = parseFloat(duration);
@@ -150,12 +150,32 @@ class TriathlonController {
             return null;
         }
     }
+    async searchTrainingSessions(searchType, searchQuery) {
+        return this.triathlonData.searchTrainingSessions(searchType, searchQuery)
+    }
 
     async swimmingSessionDistance(lapLength, lapTimes) {
         return this.triathlonData.getTotalDistance(lapLength, lapTimes)
     }
     async swimmingSessionDuration(lapTimes) {
         return this.triathlonData.getTotalDuration(lapTimes)
+    }
+
+    async checkHistory(sessionID) {
+        return this.triathlonData.checkHistory(sessionID)
+    }
+
+    async restoreHistory(sessionID, onHide) {
+        try {
+            const history = await this.triathlonData.restoreTrainingSession(sessionID)
+            toast.success('Training Session Restored.');
+            onHide(true)
+            return history
+        } catch (error) {
+            console.error('Error restoring training session:', error);
+            toast.error(error.message);
+            return null;
+        }
     }
 
     async editTrainingSession(sessionID, updatedSession, setNewSession) {
