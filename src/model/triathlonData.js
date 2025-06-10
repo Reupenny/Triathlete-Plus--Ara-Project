@@ -337,17 +337,16 @@ export class TriathlonData {
         }
 
         const trainingSessions = await TriathlonData.database.getAllData("TrainingSessions")
-        const results = {}
+        const results = []
 
         trainingSessions.forEach(session => {
             if (session.memberID === loggedInMemberID && session[searchType] && session[searchType].toString().toLowerCase().includes(searchQuery.toLowerCase())) {
-                results[session.sessionID] = session
+                results.push(session)
             }
         });
 
         return results
     }
-
 
     async deleteTrainingSession(sessionID) {
         const loggedInMemberID = window.localStorage.getItem("currentUser")
