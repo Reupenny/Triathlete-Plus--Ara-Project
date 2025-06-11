@@ -150,9 +150,6 @@ class TriathlonController {
             return null;
         }
     }
-    async searchTrainingSessions(searchType, searchQuery) {
-        return this.triathlonData.searchTrainingSessions(searchType, searchQuery)
-    }
 
     async swimmingSessionDistance(lapLength, lapTimes) {
         return this.triathlonData.getTotalDistance(lapLength, lapTimes)

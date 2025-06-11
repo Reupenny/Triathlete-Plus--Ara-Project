@@ -56,7 +56,7 @@ function Register({ onHide, onSignUp }) {
 }
 
 
-function ViewSession({ onHide, session, onEditSession, controller }) {
+function ViewSession({ onHide, session, onEditSession, controller, setUpdateView }) {
   const [swimmingDistance, setSwimmingDistance] = useState(0);
   const [swimmingDuration, setSwimmingDuration] = useState(0);
   const member = session.memberID
@@ -88,14 +88,17 @@ function ViewSession({ onHide, session, onEditSession, controller }) {
   }, [session, controller]);
 
   const handleEdit = (session) => {
-    onEditSession(session); // Call the passed prop to open modal in TriathlonView
+    onEditSession(session)
+    setUpdateView(prev => !prev)
   };
-  const handleDelete = (sessionID) => {
-    controller.deleteTrainingSession(sessionID)
+  const handleDelete = async (sessionID) => {
+    await controller.deleteTrainingSession(sessionID)
+    setUpdateView(prev => !prev)
   }
 
   const handleHistory = (sessionID) => {
     controller.restoreHistory(sessionID, onHide)
+    setUpdateView(prev => !prev)
   }
   return (
     <>
@@ -204,48 +207,23 @@ function ViewSession({ onHide, session, onEditSession, controller }) {
     </>
   );
 }
-function AllSessionData({ controller }) {
-  const [trainingSessions, setTrainingSessions] = useState([]);
-  const [averagePace, setAveragePace] = useState('')
-  const [totalDistance, setTotalDistance] = useState('')
 
-
-  useEffect(() => {
-    const fetchTrainingSessions = async () => {
-      let sessions = await controller.getAllTrainingSessions();
-      setTrainingSessions(sessions);
-      setAveragePace(controller.calculateAveragePace())
-      setTotalDistance(controller.calculateTotalDistance())
-    };
-
-    fetchTrainingSessions();
-  }, [controller]);
-
-  return (
-    <div id='userPage'>
-      <div className='card'>
-        <p className='card-header'>Average pace</p>
-        <p className='card-text'>{averagePace}</p>
-      </div>
-      <div className='card'>
-        <p className='card-header'>Total Distance</p>
-        <p className='card-text'>{totalDistance}</p>
-      </div>
-
-    </div>
-  );
-}
-
-function UserPage({ logout, onNewSession, firstName, controller, setTrainingSessions }) {
-  // const [trainingSessions, setTrainingSessions] = useState([]);
+function UserPage({ logout, onNewSession, firstName, controller, setTrainingSessions, updateView }) {
   const [sortBy, setSortBy] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
   const [searchType, setSearchType] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('')
+  const [trainingSessions, setTrainingSessionsData] = useState([]);
+  const [averagePace, setAveragePace] = useState('')
+  const [totalDistance, setTotalDistance] = useState('')
 
   useEffect(() => {
+
     const fetchTrainingSessions = async () => {
       let sessions = await controller.getAllTrainingSessions();
+      setTrainingSessionsData(sessions);
+      setAveragePace(controller.calculateAveragePace())
+      setTotalDistance(controller.calculateTotalDistance())
 
       if (searchType && searchQuery) {
         console.log(searchType)
@@ -290,7 +268,7 @@ function UserPage({ logout, onNewSession, firstName, controller, setTrainingSess
     };
 
     fetchTrainingSessions();
-  }, [controller, sortBy, sortDirection, searchType, searchQuery]);
+  }, [controller, sortBy, sortDirection, searchType, searchQuery, updateView]);
 
   const handleSort = (type) => {
     if (sortBy === type) {
@@ -340,7 +318,21 @@ function UserPage({ logout, onNewSession, firstName, controller, setTrainingSess
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </form>
-        <AllSessionData controller={controller} />
+        <div>
+          <div className='card'>
+            <p>Average pace</p>
+            <h4>{averagePace}</h4>
+          </div>
+          <div className='card'>
+            <p>Total Distance</p>
+            <h4>{totalDistance}</h4>
+          </div>
+          <div className='card'>
+            <p>Total Sessions</p>
+            <h4>{trainingSessions.length}</h4>
+          </div>
+
+        </div>
       </div>
 
 
@@ -802,7 +794,7 @@ function CyclingForm({ onFormChange, formData }) {
   );
 }
 
-function NewSession({ onHide, controller, setNewSession, session, sessionData }) {
+function NewSession({ onHide, controller, setNewSession, session, sessionData, setUpdateView }) {
   const [selectedSport, setSelectedSport] = useState(session);
   const [formData, setFormData] = useState(sessionData || {});
   console.log("Session: " + session)
@@ -828,15 +820,16 @@ function NewSession({ onHide, controller, setNewSession, session, sessionData })
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (sessionData) {
       // Editing existing session
-      controller.editTrainingSession(sessionData.sessionID, formData, setNewSession);
+      await controller.editTrainingSession(sessionData.sessionID, formData, setNewSession);
     } else {
       // Creating a new session
-      controller.handleNewSession(formData, setNewSession);
+      await controller.handleNewSession(formData, setNewSession);
     }
+    setUpdateView(prev => !prev)
   };
 
   return (
@@ -858,16 +851,19 @@ function NewSession({ onHide, controller, setNewSession, session, sessionData })
   );
 }
 
-function MainPanel({ controller, onEditSession, onViewSession, trainingSessions }) {
+function MainPanel({ controller, onEditSession, onViewSession, trainingSessions, setUpdateView }) {
 
   const handleEdit = (session) => {
-    onEditSession(session); // Call the passed prop to open modal in TriathlonView
+    onEditSession(session)
+    setUpdateView(prev => !prev)
   };
-  const handleDelete = (sessionID) => {
-    controller.deleteTrainingSession(sessionID)
+  const handleDelete = async (sessionID) => {
+    await controller.deleteTrainingSession(sessionID)
+    setUpdateView(prev => !prev)
   }
   const handleView = (session) => {
     onViewSession(session)
+    setUpdateView(prev => !prev)
   }
   return (
     <>
@@ -952,11 +948,11 @@ function MainPanel({ controller, onEditSession, onViewSession, trainingSessions 
   );
 }
 
-function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, controller, setTrainingSessions }) {
+function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, controller, setTrainingSessions, updateView }) {
   return (
     <>
       <aside className='box' >
-        {loggedIn ? <UserPage setTrainingSessions={setTrainingSessions} controller={controller} logout={logout} onNewSession={onNewSession} firstName={firstName} /> : <Login onRegister={onRegister} onSubmit={onSubmit} />}
+        {loggedIn ? <UserPage setTrainingSessions={setTrainingSessions} controller={controller} logout={logout} onNewSession={onNewSession} firstName={firstName} updateView={updateView} /> : <Login onRegister={onRegister} onSubmit={onSubmit} />}
       </aside>
     </>
   );
@@ -971,15 +967,18 @@ function TriathlonView({ controller }) {
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem('LoggedIn') === 'true');
   const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : ""); // Show users name
   const [trainingSessions, setTrainingSessions] = useState([]);
+  const [updateView, setUpdateView] = useState(false);
 
   const handleRegister = () => {
     setShowRegister(true);
   };
 
   const handleHide = () => {
-    setShowRegister(false);
-    setNewSession(false);
+    setShowRegister(false)
+    setNewSession(false)
     setViewSession(null)
+    setUpdateView(prev => !prev)
+
   };
   const handleSignUp = (username, fName, lName) => {
     controller.handleSignUp(username, fName, lName, setShowRegister);
@@ -1019,13 +1018,13 @@ function TriathlonView({ controller }) {
       <Toaster richColors position="top-center" />
 
       {/* Popups */}
-      {newSession ? (<NewSession onHide={handleHide} controller={controller} setNewSession={setNewSession} session={newSession} sessionData={newSessionData} />) : null}
+      {newSession ? (<NewSession onHide={handleHide} controller={controller} setNewSession={setNewSession} session={newSession} sessionData={newSessionData} setUpdateView={setUpdateView} />) : null}
       {showRegister ? <Register onHide={handleHide} onSignUp={handleSignUp} /> : null}
-      {viewSessionData ? (<ViewSession session={viewSessionData} onHide={handleHide} controller={controller} onEditSession={handleOpenEditModal} />) : null}
+      {viewSessionData ? (<ViewSession session={viewSessionData} onHide={handleHide} controller={controller} onEditSession={handleOpenEditModal} setUpdateView={setUpdateView} />) : null}
 
       {/* Main view */}
-      <SidePanel setTrainingSessions={handleSetTrainingSessions} onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleOpenNewSessionModal} firstName={firstName} controller={controller} />
-      {loggedIn ? (<MainPanel trainingSessions={trainingSessions} controller={controller} onEditSession={handleOpenEditModal} onViewSession={handleViewSession} />) : null}
+      <SidePanel setTrainingSessions={handleSetTrainingSessions} onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleOpenNewSessionModal} firstName={firstName} controller={controller} updateView={updateView} />
+      {loggedIn ? (<MainPanel trainingSessions={trainingSessions} controller={controller} onEditSession={handleOpenEditModal} onViewSession={handleViewSession} setUpdateView={setUpdateView} />) : null}
     </>
   );
 }
