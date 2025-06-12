@@ -282,6 +282,10 @@ function UserPage({ logout, onNewSession, firstName, controller, setTrainingSess
   const [trainingSessions, setTrainingSessionsData] = useState([])
   const [averagePace, setAveragePace] = useState('')
   const [totalDistance, setTotalDistance] = useState('')
+  const [totalMembers, setTotalMembers] = useState(0)
+  const [runningSessions, setRunningSessions] = useState(0)
+  const [swimmingSessions, setSwimmingSessions] = useState(0)
+  const [cyclingSessions, setCyclingSessions] = useState(0)
 
   useEffect(() => {
 
@@ -290,6 +294,10 @@ function UserPage({ logout, onNewSession, firstName, controller, setTrainingSess
       setTrainingSessionsData(sessions)
       setAveragePace(controller.calculateAveragePace())
       setTotalDistance(controller.calculateTotalDistance())
+      setTotalMembers(controller.calculateTotalMembers())
+      setRunningSessions(controller.calculateRunningSessions())
+      setSwimmingSessions(controller.calculateSwimmingSessions())
+      setCyclingSessions(controller.calculateCyclingSessions())
 
       if (searchType && searchQuery) {
         console.log(searchType)
@@ -392,12 +400,33 @@ function UserPage({ logout, onNewSession, firstName, controller, setTrainingSess
           <div className='card'>
             <p>Total Distance</p>
             <h4>{totalDistance}</h4>
-          </div></div>
+          </div>
+        </div>
       </div>
       <div>
-        <div className='card'>
-          <p>Total Sessions</p>
-          <h4>{trainingSessions.length}</h4>
+        <div className='row'>
+          <div className='card'>
+            <p>Total Members</p>
+            <h4>{totalMembers}</h4>
+          </div>
+          <div className='card'>
+            <p>Total Sessions</p>
+            <h4>{trainingSessions.length}</h4>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='card'>
+            <p>Running</p>
+            <h4>{runningSessions}</h4>
+          </div>
+          <div className='card'>
+            <p>Swimming</p>
+            <h4>{swimmingSessions}</h4>
+          </div>
+          <div className='card'>
+            <p>Cycling</p>
+            <h4>{cyclingSessions}</h4>
+          </div>
         </div>
         <div className='row'>
           <p>{firstName}</p>

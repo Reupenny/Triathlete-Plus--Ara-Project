@@ -11,8 +11,14 @@ export class TriathlonData {
     constructor() {
         this.history = new History()
     }
+
     async initialiseAndLoad(dbName, version) {
-        await TriathlonData.database.init(dbName, version)
+        try {
+            await TriathlonData.database.init(dbName, version)
+        } catch (error) {
+            console.error("Error initialising database:", error)
+            throw error
+        }
     }
 
     async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemp) {
@@ -432,12 +438,12 @@ export class TriathlonData {
     async getAllTrainingSessions() {
         try {
             if (!TriathlonData.database.db) {
-                await TriathlonData.database.init();
+                await TriathlonData.database.init()
             }
-            return await TriathlonData.database.getAllData("TrainingSessions");
+            return await TriathlonData.database.getAllData("TrainingSessions")
         } catch (error) {
-            console.error("Error fetching training sessions:", error);
-            throw error; // Re-throw the error to be caught in the controller
+            console.error("Error fetching training sessions:", error)
+            throw error // Re-throw the error to be caught in the controller
         }
     }
 }

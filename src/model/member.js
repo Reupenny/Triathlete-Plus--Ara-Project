@@ -112,4 +112,8 @@ export class Member {
         window.localStorage.setItem("lastMemberID", this.lastMemberID);
         return `M${String(this.lastMemberID).padStart(4, '0')}`;
     }
+
+    async getAllMembers() {
+        return await TriathlonData.database.getAllData("Members");
+    }
 }

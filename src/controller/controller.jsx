@@ -1,10 +1,9 @@
 import { toast } from 'sonner'
 
 class TriathlonController {
-    constructor(triathlonData, member, swimmingSession) {
+    constructor(triathlonData, member) {
         this.triathlonData = triathlonData
         this.member = member
-        this.swimmingSession = swimmingSession
 
         // Setup
         try {
@@ -124,6 +123,26 @@ class TriathlonController {
         const trainingSessions = await this.triathlonData.getAllTrainingSessions()
         console.log(trainingSessions)
         return await this.triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions)
+    }
+
+    async calculateTotalMembers() {
+        let result = await this.member.getAllMembers()
+        return parseInt(result.length)
+    }
+
+    async calculateRunningSessions() {
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
+        return trainingSessions.filter(session => session.sportType === 'Running').length
+    }
+
+    async calculateSwimmingSessions() {
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
+        return trainingSessions.filter(session => session.sportType === 'Swimming').length
+    }
+
+    async calculateCyclingSessions() {
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
+        return trainingSessions.filter(session => session.sportType === 'Cycling').length
     }
 
     async handleNewSession(formData, setNewSession) {
