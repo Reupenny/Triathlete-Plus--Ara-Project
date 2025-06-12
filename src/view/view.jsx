@@ -638,12 +638,30 @@ function SwimmingForm({ onFormChange, formData }) {
     } else if (lapTimes.length === 1) {
       setLapTimes(['']) // If only one lap, clear it
     }
+    onFormChange({
+      sportType: 'Swimming',
+      date: date,
+      notes: notes,
+      lapLength: lapLength,
+      strokeType: strokeType,
+      lapTimes: lapTimes, // Ensure lapTimes is the current state
+      waterTemp: waterTemp,
+    });
   }
 
   const handleLapTimeChange = (index, value) => {
     const newLapTimes = [...lapTimes]
     newLapTimes[index] = value
-    setLapTimes(newLapTimes)
+    setLapTimes(newLapTimes);
+    onFormChange({
+      sportType: 'Swimming',
+      date: date,
+      notes: notes,
+      lapLength: lapLength,
+      strokeType: strokeType,
+      lapTimes: newLapTimes, // Ensure lapTimes is the current state
+      waterTemp: waterTemp,
+    });
   }
 
   return (
