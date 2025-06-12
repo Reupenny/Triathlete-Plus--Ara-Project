@@ -10,6 +10,11 @@ export class Database {
 
     // The init method opens a connection to the IndexedDB
     async init(version = 1) {
+        return this.init(this.dbName, version)
+    }
+
+    async init(dbName, version) {
+        this.dbName = dbName
         return new Promise((resolve, reject) => {
             // Open a connection to the database
             const request = window.indexedDB.open(this.dbName, version)
@@ -44,9 +49,9 @@ export class Database {
     async addData(type, data) {
         return new Promise((resolve, reject) => {
             // Start a new transaction
-            const transaction = this.db.transaction(type, "readwrite");
-            const store = transaction.objectStore(type);
-            const request = store.add(data);
+            const transaction = this.db.transaction(type, "readwrite")
+            const store = transaction.objectStore(type)
+            const request = store.add(data)
 
             // Handle errors when adding data
             request.onerror = (event) => {
@@ -67,8 +72,8 @@ export class Database {
     async getData(type, key) {
         return new Promise((resolve, reject) => {
             // Start a new transaction
-            const transaction = this.db.transaction(type, "readonly");
-            const store = transaction.objectStore(type);
+            const transaction = this.db.transaction(type, "readonly")
+            const store = transaction.objectStore(type)
             const request = store.get(key)
 
             // Handle errors when retrieving data
@@ -158,17 +163,17 @@ export class Database {
     // Get all data from a specific object store
     async getAllData(type) {
         return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(type, "readonly");
-            const store = transaction.objectStore(type);
-            const request = store.getAll();
+            const transaction = this.db.transaction(type, "readonly")
+            const store = transaction.objectStore(type)
+            const request = store.getAll()
 
             request.onerror = (event) => {
-                reject(new Error(`Failed to get all data: ${event.target.error}`));
-            };
+                reject(new Error(`Failed to get all data: ${event.target.error}`))
+            }
 
             request.onsuccess = (event) => {
-                resolve(event.target.result);
-            };
-        });
+                resolve(event.target.result)
+            }
+        })
     }
 }

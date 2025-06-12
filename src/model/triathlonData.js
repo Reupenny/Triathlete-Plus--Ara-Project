@@ -11,8 +11,8 @@ export class TriathlonData {
     constructor() {
         this.history = new History()
     }
-    async initialiseAndLoad() {
-        await TriathlonData.database.init()
+    async initialiseAndLoad(dbName, version) {
+        await TriathlonData.database.init(dbName, version)
     }
 
     async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemp) {
@@ -287,7 +287,7 @@ export class TriathlonData {
             }
         });
 
-        return totalDistance.toFixed(2) + " kilometers";
+        return `${totalDistance % 1 === 0 ? totalDistance : parseFloat(totalDistance.toFixed(2))} kilometers`
     }
 
     async calculateAveragePace(trainingSessions) {
@@ -316,8 +316,8 @@ export class TriathlonData {
             return "No training sessions found with valid distance and duration."
         }
 
-        const averagePace = totalDuration / totalDistance;
-        return `${averagePace.toFixed(2)} minutes per kilometer`
+        const averagePace = totalDistance / totalDuration;
+        return `${averagePace % 1 === 0 ? averagePace : parseFloat(averagePace.toFixed(2))} Kilometers per minute`
     }
 
     async findTrainingSessionByID(sessionID) {
@@ -430,6 +430,14 @@ export class TriathlonData {
     }
 
     async getAllTrainingSessions() {
-        return await TriathlonData.database.getAllData("TrainingSessions")
+        try {
+            if (!TriathlonData.database.db) {
+                await TriathlonData.database.init();
+            }
+            return await TriathlonData.database.getAllData("TrainingSessions");
+        } catch (error) {
+            console.error("Error fetching training sessions:", error);
+            throw error; // Re-throw the error to be caught in the controller
+        }
     }
 }

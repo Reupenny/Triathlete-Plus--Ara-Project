@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 import { Toaster, toast } from 'sonner'
-import { format } from 'date-fns';
+import { format } from 'date-fns'
 
 // Import views
 import './glowView'
 // Import assets
 import Logo from '../../assets/Logo.webp'
 
-function Login({ onRegister, onSubmit }) {
+function Login({ onRegister, onSubmit, settings }) {
   const handleSubmit = (e) => {
-    e.preventDefault();
-    const username = document.getElementById('username').value;
-    onSubmit(username);
-  };
+    e.preventDefault()
+    const username = document.getElementById('username').value
+    onSubmit(username)
+  }
   return (
     <div id="login">
       <img className='logo' src={Logo} alt="Triathlete plus logo" />
@@ -24,18 +24,21 @@ function Login({ onRegister, onSubmit }) {
           <input type="submit" value="Login" />
         </form>
         <button id='signup-btn' onClick={onRegister}>Sign Up</button>
+        <div className='row'>
+          <button onClick={settings} className='icon icon-settings'></button>
+        </div>
       </div>
     </div>
-  );
+  )
 }
 function Register({ onHide, onSignUp }) {
   const handleSubmit = (e) => {
-    e.preventDefault();
-    const username = document.getElementById('registerUsername').value;
-    const fName = document.getElementById('fName').value;
-    const lName = document.getElementById('lName').value;
-    onSignUp(username, fName, lName);
-  };
+    e.preventDefault()
+    const username = document.getElementById('registerUsername').value
+    const fName = document.getElementById('fName').value
+    const lName = document.getElementById('lName').value
+    onSignUp(username, fName, lName)
+  }
   return (
     <>
       <div id="hide" onClick={onHide}></div>
@@ -52,45 +55,44 @@ function Register({ onHide, onSignUp }) {
         </form>
       </div>
     </>
-  );
+  )
 }
 
 
 function ViewSession({ onHide, session, onEditSession, controller, setUpdateView }) {
-  const [swimmingDistance, setSwimmingDistance] = useState(0);
-  const [swimmingDuration, setSwimmingDuration] = useState(0);
-  const member = session.memberID
+  const [swimmingDistance, setSwimmingDistance] = useState(0)
+  const [swimmingDuration, setSwimmingDuration] = useState(0)
   const sessionDate = new Date(session.date)
   const formattedDate = sessionDate.toLocaleDateString('en-NZ')
-  const [historyCheckResult, setHistoryCheckResult] = useState(false);
+  const [historyCheckResult, setHistoryCheckResult] = useState(false)
+  const member = JSON.parse(session?.memberID || null)
 
   useEffect(() => {
     if (session.sportType === 'Swimming') {
       (async () => {
-        let swimmingDistanceValue = await controller.swimmingSessionDistance(session.lapLength, session.lapTimes);
-        let swimmingDurationValue = await controller.swimmingSessionDuration(session.lapTimes);
-        setSwimmingDistance(swimmingDistanceValue);
-        setSwimmingDuration(swimmingDurationValue);
+        let swimmingDistanceValue = await controller.swimmingSessionDistance(session.lapLength, session.lapTimes)
+        let swimmingDurationValue = await controller.swimmingSessionDuration(session.lapTimes)
+        setSwimmingDistance(swimmingDistanceValue)
+        setSwimmingDuration(swimmingDurationValue)
         console.log('sets sessions')
-      })();
+      })()
     }
     async function fetchHistoryCheck() {
       try {
-        const result = await controller.checkHistory(session.sessionID);
-        setHistoryCheckResult(result);
+        const result = await controller.checkHistory(session.sessionID)
+        setHistoryCheckResult(result)
       } catch (error) {
-        console.error("Error checking history:", error);
-        // Handle the error appropriately (e.g., set an error state)
+        console.error("Error checking history:", error)
       }
     }
 
-    fetchHistoryCheck();
-  }, [session, controller]);
+    fetchHistoryCheck()
+  }, [session, controller])
 
   const handleEdit = (session) => {
     onEditSession(session)
     setUpdateView(prev => !prev)
-  };
+  }
   const handleDelete = async (sessionID) => {
     await controller.deleteTrainingSession(sessionID)
     setUpdateView(prev => !prev)
@@ -205,79 +207,143 @@ function ViewSession({ onHide, session, onEditSession, controller, setUpdateView
         </div>
       </div>
     </>
-  );
+  )
 }
 
-function UserPage({ logout, onNewSession, firstName, controller, setTrainingSessions, updateView }) {
-  const [sortBy, setSortBy] = useState(null);
-  const [sortDirection, setSortDirection] = useState('asc');
-  const [searchType, setSearchType] = useState('');
+function Settings({ onHide, controller }) {
+
+  const [dbName, setDbName] = useState(localStorage.getItem('dbName') || 'TryathlonApp')
+  const [dbVersion, setDbVersion] = useState(parseInt(localStorage.getItem('dbVersion')) || 1)
+  const [databases, setDatabases] = useState([])
+
+  useEffect(() => {
+    const fetchDatabases = async () => {
+      const dbs = await controller.getDatabases()
+      setDatabases(dbs)
+    }
+    fetchDatabases()
+  }, [controller])
+  return (
+    <>
+      <div id="hide" onClick={onHide}></div>
+      <div className="box" id="settings">
+        <div>
+          <h2>Database Configuration</h2>
+          <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
+        </div>
+        <p>You may need to logout and create a new user when switching/ adding databases.</p>
+        <br />
+        <h4>Current Databases</h4>
+        <div>
+          {databases.map((db, index) => (
+            <div className='card' key={index}>{db.name}
+              <button onClick={() => controller.handleDatabaseInit(db.name, db.version, onHide)} >Connect</button>
+            </div>
+          ))}
+        </div>
+        <br />
+        <h4>Create a new Database</h4>
+        <br />
+        <div className="input-container">
+          <input
+            type="text"
+            id="dbName"
+            name="dbName"
+            value={dbName}
+            onChange={(e) => setDbName(e.target.value)}
+          />
+          <label htmlFor="dbName" className={`floating-label ${dbName ? 'active' : ''}`}>
+            Database Name
+          </label>
+        </div>
+        <div className="input-container">
+          <input
+            type="number"
+            id="dbVersion"
+            name="dbVersion"
+            value={dbVersion}
+            onChange={(e) => setDbVersion(e.target.value)}
+          />
+          <label htmlFor="dbVersion" className={`floating-label ${dbVersion ? 'active' : ''}`}>
+            Database Version
+          </label>
+        </div>
+        <button onClick={() => controller.handleDatabaseInit(dbName, dbVersion, onHide)}>Connect to Database</button>
+      </div>
+    </>
+  )
+}
+
+function UserPage({ logout, onNewSession, firstName, controller, setTrainingSessions, updateView, settings }) {
+  const [sortBy, setSortBy] = useState(null)
+  const [sortDirection, setSortDirection] = useState('asc')
+  const [searchType, setSearchType] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [trainingSessions, setTrainingSessionsData] = useState([]);
+  const [trainingSessions, setTrainingSessionsData] = useState([])
   const [averagePace, setAveragePace] = useState('')
   const [totalDistance, setTotalDistance] = useState('')
 
   useEffect(() => {
 
     const fetchTrainingSessions = async () => {
-      let sessions = await controller.getAllTrainingSessions();
-      setTrainingSessionsData(sessions);
+      let sessions = await controller.getAllTrainingSessions()
+      setTrainingSessionsData(sessions)
       setAveragePace(controller.calculateAveragePace())
       setTotalDistance(controller.calculateTotalDistance())
 
       if (searchType && searchQuery) {
         console.log(searchType)
-        sessions = await controller.searchTrainingSessions(searchType, searchQuery);
+        sessions = await controller.searchTrainingSessions(searchType, searchQuery)
       }
 
       // Calculate swimming data for each session if it's a swimming session
       const sessionsWithCalculatedData = await Promise.all(sessions.map(async (entry) => {
         if (entry.sportType === 'Swimming') {
-          const swimmingDistanceValue = await controller.swimmingSessionDistance(entry.lapLength, entry.lapTimes);
-          const swimmingDurationValue = await controller.swimmingSessionDuration(entry.lapTimes);
+          const swimmingDistanceValue = await controller.swimmingSessionDistance(entry.lapLength, entry.lapTimes)
+          const swimmingDurationValue = await controller.swimmingSessionDuration(entry.lapTimes)
           return {
             ...entry,
             calculatedSwimmingDistance: swimmingDistanceValue,
             calculatedSwimmingDuration: swimmingDurationValue,
-          };
+          }
         }
-        return entry;
-      }));
+        return entry
+      }))
 
-      let sortedSessions = sessionsWithCalculatedData;
+      let sortedSessions = sessionsWithCalculatedData
       if (sortBy) {
         switch (sortBy) {
           case 'date':
-            sortedSessions = await controller.sortTrainingSessionsByDate(sortedSessions);
-            break;
+            sortedSessions = await controller.sortTrainingSessionsByDate(sortedSessions)
+            break
           case 'sport':
-            sortedSessions = await controller.sortTrainingSessionsBySportType(sortedSessions);
-            break;
+            sortedSessions = await controller.sortTrainingSessionsBySportType(sortedSessions)
+            break
           case 'distance':
-            sortedSessions = await controller.sortTrainingSessionsByDistance(sortedSessions);
-            break;
+            sortedSessions = await controller.sortTrainingSessionsByDistance(sortedSessions)
+            break
           default:
-            break;
+            break
         }
         if (sortDirection === 'desc') {
-          sortedSessions = sortedSessions.reverse();
+          sortedSessions = sortedSessions.reverse()
         }
       }
-      setTrainingSessions(sortedSessions);
+      setTrainingSessions(sortedSessions)
 
-    };
+    }
 
-    fetchTrainingSessions();
-  }, [controller, sortBy, sortDirection, searchType, searchQuery, updateView]);
+    fetchTrainingSessions()
+  }, [controller, sortBy, sortDirection, searchType, searchQuery, updateView])
 
   const handleSort = (type) => {
     if (sortBy === type) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
     } else {
-      setSortBy(type);
-      setSortDirection('asc');
+      setSortBy(type)
+      setSortDirection('asc')
     }
-  };
+  }
   return (
     <div id='userPage'>
       <div>
@@ -326,75 +392,75 @@ function UserPage({ logout, onNewSession, firstName, controller, setTrainingSess
           <div className='card'>
             <p>Total Distance</p>
             <h4>{totalDistance}</h4>
-          </div>
-          <div className='card'>
-            <p>Total Sessions</p>
-            <h4>{trainingSessions.length}</h4>
-          </div>
-
+          </div></div>
+      </div>
+      <div>
+        <div className='card'>
+          <p>Total Sessions</p>
+          <h4>{trainingSessions.length}</h4>
+        </div>
+        <div className='row'>
+          <p>{firstName}</p>
+          <button onClick={settings} className='icon icon-settings'></button>
+          <button onClick={logout}>Logout</button>
         </div>
       </div>
-
-
-      <div className='row'>
-        <p>{firstName}</p>
-        <button onClick={logout}>Logout</button>
-      </div>
     </div>
-  );
+  )
 }
 // RunningForm Component
 function RunningForm({ onFormChange, formData }) {
-  const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'));
-  const [distance, setDistance] = useState(formData?.distance || '');
-  const [duration, setDuration] = useState(formData?.duration || '');
-  const [weather, setWeather] = useState(formData?.weather || '');
-  const [airTemp, setAirTemp] = useState(formData?.airTemp || '');
-  const [notes, setNotes] = useState(formData?.notes || '');
-  const [shoesUsed, setShoesUsed] = useState(formData?.shoesUsed || '');
-  const member = formData?.memberID || null
+  const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'))
+  const [distance, setDistance] = useState(formData?.distance || '')
+  const [duration, setDuration] = useState(formData?.duration || '')
+  const [weather, setWeather] = useState(formData?.weather || '')
+  const [airTemp, setAirTemp] = useState(formData?.airTemp || '')
+  const [notes, setNotes] = useState(formData?.notes || '')
+  const [shoesUsed, setShoesUsed] = useState(formData?.shoesUsed || '')
+
+  const member = JSON.parse(formData?.memberID || null)
 
   const handleChange = (e) => {
-    const { id, value } = e.target;
-    let updatedDate = date;
-    let updatedDistance = distance;
-    let updatedDuration = duration;
-    let updatedWeather = weather;
-    let updatedAirTemp = airTemp;
-    let updatedNotes = notes;
-    let updatedShoesUsed = shoesUsed;
+    const { id, value } = e.target
+    let updatedDate = date
+    let updatedDistance = distance
+    let updatedDuration = duration
+    let updatedWeather = weather
+    let updatedAirTemp = airTemp
+    let updatedNotes = notes
+    let updatedShoesUsed = shoesUsed
 
     switch (id) {
       case 'newDate':
-        updatedDate = value;
-        setDate(value);
-        break;
+        updatedDate = value
+        setDate(value)
+        break
       case 'newDistance':
-        updatedDistance = value;
-        setDistance(value);
-        break;
+        updatedDistance = value
+        setDistance(value)
+        break
       case 'newDuration':
-        updatedDuration = value;
-        setDuration(value);
-        break;
+        updatedDuration = value
+        setDuration(value)
+        break
       case 'newWeather':
-        updatedWeather = value;
-        setWeather(value);
-        break;
+        updatedWeather = value
+        setWeather(value)
+        break
       case 'newAirTemp':
-        updatedAirTemp = value;
-        setAirTemp(value);
-        break;
+        updatedAirTemp = value
+        setAirTemp(value)
+        break
       case 'newNotes':
-        updatedNotes = value;
-        setNotes(value);
-        break;
+        updatedNotes = value
+        setNotes(value)
+        break
       case 'newShoes':
-        updatedShoesUsed = value;
-        setShoesUsed(value);
-        break;
+        updatedShoesUsed = value
+        setShoesUsed(value)
+        break
       default:
-        break;
+        break
     }
     // Send form data to parent component with the most recent values
     onFormChange({
@@ -406,8 +472,8 @@ function RunningForm({ onFormChange, formData }) {
       airTemp: updatedAirTemp,
       notes: updatedNotes,
       shoesUsed: updatedShoesUsed,
-    });
-  };
+    })
+  }
 
   return (
     <>
@@ -476,50 +542,50 @@ function RunningForm({ onFormChange, formData }) {
       </div>
 
     </>
-  );
+  )
 }
 
 // SwimmingForm Component
 function SwimmingForm({ onFormChange, formData }) {
-  const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'));
-  const [lapLength, setLapLength] = useState(formData?.lapLength || '');
-  const [waterTemp, setWaterTemp] = useState(formData?.waterTemp || '');
-  const [notes, setNotes] = useState(formData?.notes || '');
-  const [strokeType, setStroke] = useState(formData?.strokeType || 'Freestyle');
-  const [lapTimes, setLapTimes] = useState(formData?.lapTimes || ['']);
-  const member = formData?.memberID || null
+  const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'))
+  const [lapLength, setLapLength] = useState(formData?.lapLength || '')
+  const [waterTemp, setWaterTemp] = useState(formData?.waterTemp || '')
+  const [notes, setNotes] = useState(formData?.notes || '')
+  const [strokeType, setStroke] = useState(formData?.strokeType || 'Freestyle')
+  const [lapTimes, setLapTimes] = useState(formData?.lapTimes || [''])
+  const member = JSON.parse(formData?.memberID || null)
   const handleChange = (e) => {
-    const { id, value } = e.target;
-    let updatedDate = date;
-    let updatedLapLength = lapLength;
-    let updatedWaterTemp = waterTemp;
-    let updatedNotes = notes;
-    let updatedStrokeType = strokeType;
-    let updatedLapTimes = lapTimes; // Lap times are handled separately
+    const { id, value } = e.target
+    let updatedDate = date
+    let updatedLapLength = lapLength
+    let updatedWaterTemp = waterTemp
+    let updatedNotes = notes
+    let updatedStrokeType = strokeType
+    let updatedLapTimes = lapTimes // Lap times are handled separately
 
     switch (id) {
       case 'newDate':
-        updatedDate = value;
-        setDate(value);
-        break;
+        updatedDate = value
+        setDate(value)
+        break
       case 'newLapLength':
-        updatedLapLength = value;
-        setLapLength(value);
-        break;
+        updatedLapLength = value
+        setLapLength(value)
+        break
       case 'newWaterTemp':
-        updatedWaterTemp = value;
-        setWaterTemp(value);
-        break;
+        updatedWaterTemp = value
+        setWaterTemp(value)
+        break
       case 'newStroke':
-        updatedStrokeType = value;
-        setStroke(value);
-        break;
+        updatedStrokeType = value
+        setStroke(value)
+        break
       case 'newNotes':
-        updatedNotes = value;
-        setNotes(value);
-        break;
+        updatedNotes = value
+        setNotes(value)
+        break
       default:
-        break;
+        break
     }
     // Send form data to parent component with the most recent values
     onFormChange({
@@ -530,26 +596,26 @@ function SwimmingForm({ onFormChange, formData }) {
       strokeType: updatedStrokeType,
       lapTimes: updatedLapTimes, // Ensure lapTimes is the current state
       waterTemp: updatedWaterTemp,
-    });
-  };
+    })
+  }
 
   const addLapTime = () => {
-    setLapTimes([...lapTimes, '']);
-  };
+    setLapTimes([...lapTimes, ''])
+  }
 
   const removeLastLapTime = () => {
     if (lapTimes.length > 1) { // Ensure there's at least one lap time to remove
-      setLapTimes(lapTimes.slice(0, -1));
+      setLapTimes(lapTimes.slice(0, -1))
     } else if (lapTimes.length === 1) {
-      setLapTimes(['']); // If only one lap, clear it
+      setLapTimes(['']) // If only one lap, clear it
     }
-  };
+  }
 
   const handleLapTimeChange = (index, value) => {
-    const newLapTimes = [...lapTimes];
-    newLapTimes[index] = value;
-    setLapTimes(newLapTimes);
-  };
+    const newLapTimes = [...lapTimes]
+    newLapTimes[index] = value
+    setLapTimes(newLapTimes)
+  }
 
   return (
     <>
@@ -624,68 +690,68 @@ function SwimmingForm({ onFormChange, formData }) {
         </label>
       </div>
     </>
-  );
+  )
 }
 
 // CyclingForm Component
 function CyclingForm({ onFormChange, formData }) {
-  const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'));
-  const [distance, setDistance] = useState(formData?.distance || '');
-  const [duration, setDuration] = useState(formData?.duration || '');
-  const [weather, setWeather] = useState(formData?.weather || '');
-  const [airTemp, setAirTemp] = useState(formData?.airTemp || '');
-  const [notes, setNotes] = useState(formData?.notes || '');
-  const [bikeUsed, setBikeUsed] = useState(formData?.bikeUsed || '');
-  const [terrain, setTerrain] = useState(formData?.terrain || '');
+  const [date, setDate] = useState(formData?.date || format(new Date(), 'yyyy-MM-dd'))
+  const [distance, setDistance] = useState(formData?.distance || '')
+  const [duration, setDuration] = useState(formData?.duration || '')
+  const [weather, setWeather] = useState(formData?.weather || '')
+  const [airTemp, setAirTemp] = useState(formData?.airTemp || '')
+  const [notes, setNotes] = useState(formData?.notes || '')
+  const [bikeUsed, setBikeUsed] = useState(formData?.bikeUsed || '')
+  const [terrain, setTerrain] = useState(formData?.terrain || '')
 
-  const member = formData?.memberID || null
+  const member = JSON.parse(formData?.memberID || null)
 
   const handleChange = (e) => {
-    const { id, value } = e.target;
-    let updatedDate = date;
-    let updatedDistance = distance;
-    let updatedDuration = duration;
-    let updatedWeather = weather;
-    let updatedAirTemp = airTemp;
-    let updatedNotes = notes;
-    let updatedBikeUsed = bikeUsed;
-    let updatedTerrain = terrain;
+    const { id, value } = e.target
+    let updatedDate = date
+    let updatedDistance = distance
+    let updatedDuration = duration
+    let updatedWeather = weather
+    let updatedAirTemp = airTemp
+    let updatedNotes = notes
+    let updatedBikeUsed = bikeUsed
+    let updatedTerrain = terrain
 
     switch (id) {
       case 'newDate':
-        updatedDate = value;
-        setDate(value);
-        break;
+        updatedDate = value
+        setDate(value)
+        break
       case 'newDistance':
-        updatedDistance = value;
-        setDistance(value);
-        break;
+        updatedDistance = value
+        setDistance(value)
+        break
       case 'newDuration':
-        updatedDuration = value;
-        setDuration(value);
-        break;
+        updatedDuration = value
+        setDuration(value)
+        break
       case 'newTerrain':
-        updatedTerrain = value;
-        setTerrain(value);
-        break;
+        updatedTerrain = value
+        setTerrain(value)
+        break
       case 'newWeather':
-        updatedWeather = value;
-        setWeather(value);
-        break;
+        updatedWeather = value
+        setWeather(value)
+        break
       case 'newAirTemp':
-        updatedAirTemp = value;
-        setAirTemp(value);
-        break;
+        updatedAirTemp = value
+        setAirTemp(value)
+        break
       case 'newNotes':
-        updatedNotes = value;
-        setNotes(value);
-        break;
+        updatedNotes = value
+        setNotes(value)
+        break
       case 'newBikeUsed':
-        updatedBikeUsed = value;
-        setBikeUsed(value);
-        break;
+        updatedBikeUsed = value
+        setBikeUsed(value)
+        break
       default:
-        break;
+        break
     }
     // Send form data to parent component with the most recent values
     onFormChange({
@@ -698,8 +764,8 @@ function CyclingForm({ onFormChange, formData }) {
       bikeUsed: updatedBikeUsed,
       airTemp: updatedAirTemp,
       weather: updatedWeather,
-    });
-  };
+    })
+  }
 
   return (
     <>
@@ -791,27 +857,38 @@ function CyclingForm({ onFormChange, formData }) {
         </label>
       </div>
     </>
-  );
+  )
 }
 
 function NewSession({ onHide, controller, setNewSession, session, sessionData, setUpdateView }) {
-  const [selectedSport, setSelectedSport] = useState(session);
-  const [formData, setFormData] = useState(sessionData || {});
+  const [selectedSport, setSelectedSport] = useState(session)
+  const [formData, setFormData] = useState(sessionData || {})
+  const [historyCheckResult, setHistoryCheckResult] = useState(false)
   console.log("Session: " + session)
 
   useEffect(() => {
     if (sessionData && sessionData.sessionID && session == true) {
       console.log("EDITING")
       // EDITING MODE: sessionData is present and has a sessionID
-      setSelectedSport(sessionData.sportType.toLowerCase());
-      setFormData(sessionData); // Populate formData with a copy of sessionData
+      setSelectedSport(sessionData.sportType.toLowerCase())
+      setFormData(sessionData) // Populate formData with a copy of sessionData
     } else {
       console.log("NEW")
       // NEW SESSION MODE: sessionData is null or doesn't indicate an existing session
-      setSelectedSport(session);
-      setFormData({}); // Initialize for new, include default date
+      setSelectedSport(session)
+      setFormData({}) // Initialize for new, include default date
     }
-  }, [session, sessionData]); // Re-run this effect if 'session' or 'sessionData' props change
+    async function fetchHistoryCheck() {
+      try {
+        const result = await controller.checkHistory(sessionData.sessionID)
+        setHistoryCheckResult(result)
+      } catch (error) {
+        console.error("Error checking history:", error)
+      }
+    }
+
+    fetchHistoryCheck()
+  }, [session, sessionData, controller]) // Re-run this effect if 'session' or 'sessionData' props change
 
   const handleFormChange = (dataFromChildForm) => {
     setFormData(prevData => ({
@@ -821,16 +898,20 @@ function NewSession({ onHide, controller, setNewSession, session, sessionData, s
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (sessionData) {
       // Editing existing session
-      await controller.editTrainingSession(sessionData.sessionID, formData, setNewSession);
+      await controller.editTrainingSession(sessionData.sessionID, formData, setNewSession)
     } else {
       // Creating a new session
-      await controller.handleNewSession(formData, setNewSession);
+      await controller.handleNewSession(formData, setNewSession)
     }
     setUpdateView(prev => !prev)
-  };
+  }
+  const handleHistory = (sessionID) => {
+    controller.restoreHistory(sessionID, onHide)
+    setUpdateView(prev => !prev)
+  }
 
   return (
     <>
@@ -844,11 +925,19 @@ function NewSession({ onHide, controller, setNewSession, session, sessionData, s
           {selectedSport === 'running' && <RunningForm onFormChange={handleFormChange} formData={sessionData} />}
           {selectedSport === 'swimming' && <SwimmingForm onFormChange={handleFormChange} formData={sessionData} />}
           {selectedSport === 'cycling' && <CyclingForm onFormChange={handleFormChange} formData={sessionData} />}
-          <input type="submit" value={sessionData ? 'Save ' : 'Submit'} id='register-btn' />
+
+          <div className='row'>
+            {historyCheckResult ? (
+              <i className='icon icon-return' onClick={() => handleHistory(sessionData.sessionID)}></i>
+            ) : (
+              null
+            )}
+            <input type="submit" value={sessionData ? 'Save ' : 'Submit'} id='register-btn' />
+          </div>
         </form>
       </div>
     </>
-  );
+  )
 }
 
 function MainPanel({ controller, onEditSession, onViewSession, trainingSessions, setUpdateView }) {
@@ -856,7 +945,7 @@ function MainPanel({ controller, onEditSession, onViewSession, trainingSessions,
   const handleEdit = (session) => {
     onEditSession(session)
     setUpdateView(prev => !prev)
-  };
+  }
   const handleDelete = async (sessionID) => {
     await controller.deleteTrainingSession(sessionID)
     setUpdateView(prev => !prev)
@@ -938,54 +1027,61 @@ function MainPanel({ controller, onEditSession, onViewSession, trainingSessions,
                       <i className='icon icon-trash' onClick={() => handleDelete(entry.sessionID)}></i>
                     </td>
                   </tr>
-                );
+                )
               })}
             </tbody>
           </table>
         </div>
       </main>
     </>
-  );
+  )
 }
 
-function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, controller, setTrainingSessions, updateView }) {
+function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, firstName, controller, setTrainingSessions, updateView, settings }) {
   return (
     <>
       <aside className='box' >
-        {loggedIn ? <UserPage setTrainingSessions={setTrainingSessions} controller={controller} logout={logout} onNewSession={onNewSession} firstName={firstName} updateView={updateView} /> : <Login onRegister={onRegister} onSubmit={onSubmit} />}
+        {loggedIn ? <UserPage setTrainingSessions={setTrainingSessions} controller={controller} logout={logout} onNewSession={onNewSession} firstName={firstName} updateView={updateView} settings={settings} /> : <Login onRegister={onRegister} onSubmit={onSubmit} settings={settings} />}
       </aside>
     </>
-  );
+  )
 }
 
 function TriathlonView({ controller }) {
   const userDetails = controller.HandleGettingUserDetails() // Gets user details
-  const [showRegister, setShowRegister] = useState(false);
-  const [newSession, setNewSession] = useState(false);
-  const [viewSessionData, setViewSession] = useState(null);
-  const [newSessionData, setNewSessionData] = useState(null);
-  const [loggedIn, setLoggedIn] = useState(localStorage.getItem('LoggedIn') === 'true');
-  const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : ""); // Show users name
-  const [trainingSessions, setTrainingSessions] = useState([]);
-  const [updateView, setUpdateView] = useState(false);
+  const [showRegister, setShowRegister] = useState(false)
+  const [newSession, setNewSession] = useState(false)
+  const [changeSettings, setChangeSettings] = useState(false)
+  const [viewSessionData, setViewSession] = useState(null)
+  const [newSessionData, setNewSessionData] = useState(null)
+  const [loggedIn, setLoggedIn] = useState(localStorage.getItem('LoggedIn') === 'true')
+  const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : "") // Show users name
+  const [trainingSessions, setTrainingSessions] = useState([])
+  const [updateView, setUpdateView] = useState(false)
 
   const handleRegister = () => {
-    setShowRegister(true);
-  };
+    setShowRegister(true)
+  }
 
   const handleHide = () => {
     setShowRegister(false)
     setNewSession(false)
     setViewSession(null)
+    setChangeSettings(false)
     setUpdateView(prev => !prev)
 
-  };
+  }
+
+  const handleChangeSettings = () => {
+    setChangeSettings(true)
+  }
+
   const handleSignUp = (username, fName, lName) => {
-    controller.handleSignUp(username, fName, lName, setShowRegister);
-  };
+    controller.handleSignUp(username, fName, lName, setShowRegister)
+  }
   const handleSubmit = async (username) => {
-    controller.handleLogin(username, setLoggedIn, setFirstName);
-  };
+    controller.handleLogin(username, setLoggedIn, setFirstName)
+  }
   const handlelogout = () => {
     controller.handleLogout(setLoggedIn)
   }
@@ -993,16 +1089,16 @@ function TriathlonView({ controller }) {
 
   // For opening NewSession in 'new' mode
   const handleOpenNewSessionModal = (sessionType) => {
-    setNewSessionData(null); // Clears data if there is any
-    setNewSession(sessionType); // e.g., 'running'
-  };
+    setNewSessionData(null) // Clears data if there is any
+    setNewSession(sessionType) // e.g., 'running'
+  }
 
   // For opening NewSession in 'edit' mode
   const handleOpenEditModal = (sessionData) => {
-    setNewSessionData(sessionData); // The full session object
+    setNewSessionData(sessionData) // The full session object
     setViewSession(null) // hides the session view if its open
-    setNewSession(true); // e.g., 'running'
-  };
+    setNewSession(true) // e.g., 'running'
+  }
 
   const handleViewSession = (session) => {
     setViewSession(session)
@@ -1018,15 +1114,16 @@ function TriathlonView({ controller }) {
       <Toaster richColors position="top-center" />
 
       {/* Popups */}
+      {changeSettings ? (<Settings onHide={handleHide} controller={controller} />) : null}
       {newSession ? (<NewSession onHide={handleHide} controller={controller} setNewSession={setNewSession} session={newSession} sessionData={newSessionData} setUpdateView={setUpdateView} />) : null}
       {showRegister ? <Register onHide={handleHide} onSignUp={handleSignUp} /> : null}
       {viewSessionData ? (<ViewSession session={viewSessionData} onHide={handleHide} controller={controller} onEditSession={handleOpenEditModal} setUpdateView={setUpdateView} />) : null}
 
       {/* Main view */}
-      <SidePanel setTrainingSessions={handleSetTrainingSessions} onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleOpenNewSessionModal} firstName={firstName} controller={controller} updateView={updateView} />
+      <SidePanel setTrainingSessions={handleSetTrainingSessions} onRegister={handleRegister} onSubmit={handleSubmit} loggedIn={loggedIn} logout={handlelogout} onNewSession={handleOpenNewSessionModal} firstName={firstName} controller={controller} updateView={updateView} settings={handleChangeSettings} />
       {loggedIn ? (<MainPanel trainingSessions={trainingSessions} controller={controller} onEditSession={handleOpenEditModal} onViewSession={handleViewSession} setUpdateView={setUpdateView} />) : null}
     </>
-  );
+  )
 }
 
 export default TriathlonView

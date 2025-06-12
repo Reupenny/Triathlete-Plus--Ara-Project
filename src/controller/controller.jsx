@@ -8,76 +8,101 @@ class TriathlonController {
 
         // Setup
         try {
-            this.triathlonData.initialiseAndLoad()
-            console.log('setup good');
+            let dbName = localStorage.getItem('dbName')
+            if (!dbName) {
+                dbName = 'TryathlonApp'
+                localStorage.setItem('dbName', dbName)
+            }
+            let dbVersion = localStorage.getItem('dbVersion')
+            if (!dbVersion) {
+                dbVersion = 1
+                localStorage.setItem('dbVersion', dbVersion)
+            } else {
+                dbVersion = parseInt(dbVersion)
+            }
+            this.triathlonData.initialiseAndLoad(dbName, dbVersion)
+            console.log('setup good')
+            toast.success('Connected to Database')
         } catch (error) {
-            console.error('Error setting up:', error);
+            console.error('Error setting up:', error)
+            toast.error(error.message)
         }
-        this.findTrainingSessionByID = this.findTrainingSessionByID.bind(this);
-        this.editTrainingSession = this.editTrainingSession.bind(this);
-        this.HandleGettingUserDetails = this.HandleGettingUserDetails.bind(this);
+        this.findTrainingSessionByID = this.findTrainingSessionByID.bind(this)
+        this.editTrainingSession = this.editTrainingSession.bind(this)
+        this.HandleGettingUserDetails = this.HandleGettingUserDetails.bind(this)
     }
 
     async getAllTrainingSessions() {
-        const trainingSessions = await this.triathlonData.getAllTrainingSessions();
-        return trainingSessions;
+        try {
+            const trainingSessions = await this.triathlonData.getAllTrainingSessions()
+            return trainingSessions
+        } catch (error) {
+            console.error("Error fetching training sessions:", error)
+            toast('Failed to load training sessions. Refresh to try again.', {
+                action: {
+                    label: 'Refresh',
+                    onClick: () => window.location.reload()
+                }
+            })
+            return []
+        }
     }
 
     async sortTrainingSessionsByDate(trainingSessions) {
-        return await this.triathlonData.sortTrainingSessionsByDate(trainingSessions);
+        return await this.triathlonData.sortTrainingSessionsByDate(trainingSessions)
     }
 
     async sortTrainingSessionsBySportType(trainingSessions) {
-        return await this.triathlonData.sortTrainingSessionsBySportType(trainingSessions);
+        return await this.triathlonData.sortTrainingSessionsBySportType(trainingSessions)
     }
 
     async sortTrainingSessionsByDistance(trainingSessions) {
-        return await this.triathlonData.sortTrainingSessionsByDistance(trainingSessions);
+        return await this.triathlonData.sortTrainingSessionsByDistance(trainingSessions)
     }
 
     async searchTrainingSessions(searchType, searchQuery) {
-        return await this.triathlonData.searchTrainingSessions(searchType, searchQuery);
+        return await this.triathlonData.searchTrainingSessions(searchType, searchQuery)
     }
 
     async handleLogin(username, setLoggedIn, setFirstName) {
         try {
-            const loginResult = await this.member.login(username);
+            const loginResult = await this.member.login(username)
             if (!loginResult) {
-                throw new Error('Invalid username');
+                throw new Error('Invalid username')
             }
-            console.log('User Logged in');
+            console.log('User Logged in')
             toast.success('Logged in')
             setLoggedIn(true)
-            setFirstName(loginResult.fName);
+            setFirstName(loginResult.fName)
             return loginResult
         } catch (error) {
-            console.error('Error Logging in user:', error);
+            console.error('Error Logging in user:', error)
             toast.error(error.message)
             return
         }
     }
     async handleSignUp(userName, fName, lName, setShowRegister) {
         try {
-            await this.member.createMember(userName, fName, lName);
-            console.log('User registered successfully');
+            await this.member.createMember(userName, fName, lName)
+            console.log('User registered successfully')
             toast.success('Registration successful!')
 
             setShowRegister(false)
         } catch (error) {
-            console.error('Error registering user:', error);
-            toast.error(error.message);
+            console.error('Error registering user:', error)
+            toast.error(error.message)
         }
     }
     async handleLogout(setLoggedIn) {
         try {
-            await this.member.logout();
+            await this.member.logout()
             toast.success('Logged out')
             setLoggedIn(false)
             return true
         } catch (error) {
-            console.error('Error logging out user:', error);
-            toast.error('Logout failed.');
-            return false;
+            console.error('Error logging out user:', error)
+            toast.error('Logout failed.')
+            return false
         }
     }
     //User Testing
@@ -90,13 +115,13 @@ class TriathlonController {
     }
 
     async calculateAveragePace() {
-        const trainingSessions = await this.triathlonData.getAllTrainingSessions();
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
         console.log(trainingSessions)
-        return await this.triathlonData.calculateAveragePace(trainingSessions);
+        return await this.triathlonData.calculateAveragePace(trainingSessions)
     }
 
     async calculateTotalDistance() {
-        const trainingSessions = await this.triathlonData.getAllTrainingSessions();
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
         console.log(trainingSessions)
         return await this.triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions)
     }
@@ -104,50 +129,50 @@ class TriathlonController {
     async handleNewSession(formData, setNewSession) {
         try {
             if (formData.sportType === 'Swimming') {
-                const parsedLapLength = parseFloat(formData.lapLength);
-                const parsedWaterTemp = parseFloat(formData.waterTemp);
-                const parsedLapTimes = formData.lapTimes.map(lapTime => parseFloat(lapTime));
+                const parsedLapLength = parseFloat(formData.lapLength)
+                const parsedWaterTemp = parseFloat(formData.waterTemp)
+                const parsedLapTimes = formData.lapTimes.map(lapTime => parseFloat(lapTime))
                 console.log(formData.notes + formData.strokeType)
                 await this.triathlonData.CreateSwimmingSession(formData.date, formData.notes, parsedLapLength, formData.strokeType, parsedLapTimes, parsedWaterTemp)
-                console.log('Swimming session created successfully');
-                toast.success('Swimming Session Created');
+                console.log('Swimming session created successfully')
+                toast.success('Swimming Session Created')
                 setNewSession(false)
             } else if (formData.sportType === 'Cycling') {
-                const { date, notes, distance, duration, terrain, bikeUsed, airTemp, weather, } = formData;
-                const parsedDistance = parseFloat(distance);
-                const parsedDuration = parseFloat(duration);
-                const parsedAirTemp = parseFloat(airTemp);
+                const { date, notes, distance, duration, terrain, bikeUsed, airTemp, weather, } = formData
+                const parsedDistance = parseFloat(distance)
+                const parsedDuration = parseFloat(duration)
+                const parsedAirTemp = parseFloat(airTemp)
                 await this.triathlonData.CreateCyclingSession(date, notes, parsedDistance, parsedDuration, terrain, bikeUsed, parsedAirTemp, weather)
-                console.log('Cycling session created successfully');
-                toast.success('Cycling Session Created');
+                console.log('Cycling session created successfully')
+                toast.success('Cycling Session Created')
                 setNewSession(false)
             } else if (formData.sportType === 'Running') {
-                const { date, notes, distance, duration, shoesUsed, weather, airTemp } = formData;
-                const parsedDistance = parseFloat(distance);
-                const parsedDuration = parseFloat(duration);
-                const parsedAirTemp = parseFloat(airTemp);
-                await this.triathlonData.CreateRunningSession(date, notes, parsedDistance, parsedDuration, shoesUsed, parsedAirTemp, weather);
-                console.log('Running session created successfully');
-                toast.success('Running Session Created');
+                const { date, notes, distance, duration, shoesUsed, weather, airTemp } = formData
+                const parsedDistance = parseFloat(distance)
+                const parsedDuration = parseFloat(duration)
+                const parsedAirTemp = parseFloat(airTemp)
+                await this.triathlonData.CreateRunningSession(date, notes, parsedDistance, parsedDuration, shoesUsed, parsedAirTemp, weather)
+                console.log('Running session created successfully')
+                toast.success('Running Session Created')
                 setNewSession(false)
             } else {
-                console.log('Invalid sport type');
-                toast.error('Invalid sport type');
+                console.log('Invalid sport type')
+                toast.error('Invalid sport type')
             }
         } catch (error) {
-            console.error('Error creating session:', error);
-            toast.error(error.message);
+            console.error('Error creating session:', error)
+            toast.error(error.message)
         }
     }
 
     async findTrainingSessionByID(sessionID) {
         try {
-            const sessionData = await this.triathlonData.findTrainingSessionByID(sessionID);
-            return sessionData;
+            const sessionData = await this.triathlonData.findTrainingSessionByID(sessionID)
+            return sessionData
         } catch (error) {
-            console.error('Error finding training session:', error);
-            toast.error(error.message);
-            return null;
+            console.error('Error finding training session:', error)
+            toast.error(error.message)
+            return null
         }
     }
 
@@ -165,35 +190,59 @@ class TriathlonController {
     async restoreHistory(sessionID, onHide) {
         try {
             const history = await this.triathlonData.restoreTrainingSession(sessionID)
-            toast.success('Training Session Restored.');
+            toast.success('Training Session Restored.')
             onHide(true)
             return history
         } catch (error) {
-            console.error('Error restoring training session:', error);
-            toast.error(error.message);
-            return null;
+            console.error('Error restoring training session:', error)
+            toast.error(error.message)
+            return null
         }
     }
 
     async editTrainingSession(sessionID, updatedSession, setNewSession) {
         try {
-            await this.triathlonData.editTrainingSession(sessionID, updatedSession);
-            console.log('Training session edited successfully');
-            toast.success('Training session edited successfully');
+            await this.triathlonData.editTrainingSession(sessionID, updatedSession)
+            console.log('Training session edited successfully')
+            toast.success('Training session edited successfully')
             setNewSession(false)
         } catch (error) {
-            console.error('Error editing training session:', error);
-            toast.error(error.message);
+            console.error('Error editing training session:', error)
+            toast.error(error.message)
         }
     }
     async deleteTrainingSession(sessionID) {
         try {
             await this.triathlonData.deleteTrainingSession(sessionID)
-            console.log('Training session deleted successfully');
-            toast.success('Training session deleted successfully');
+            console.log('Training session deleted successfully')
+            toast.success('Training session deleted successfully')
         } catch (error) {
-            console.error('Error deleting training session:', error);
-            toast.error(error.message);
+            console.error('Error deleting training session:', error)
+            toast.error(error.message)
+        }
+    }
+
+    async handleDatabaseInit(dbName, version, onHide) {
+        try {
+            await this.triathlonData.initialiseAndLoad(dbName, version)
+            localStorage.setItem('dbName', dbName)
+            localStorage.setItem('dbVersion', version)
+            console.log('Database initialised successfully')
+            toast.success('Database initialised successfully')
+            onHide(true)
+        } catch (error) {
+            console.error('Error initialising database:', error)
+            toast.error(error.message)
+        }
+    }
+
+    async getDatabases() {
+        if (window.indexedDB && window.indexedDB.databases) {
+            const dbs = await window.indexedDB.databases()
+            return dbs.map(db => ({ name: db.name, version: db.version })).filter(db => db.name) // Filter out null names
+        } else {
+            console.error("IndexedDB databases() method is not supported in this browser.")
+            return []
         }
     }
 }
