@@ -45,7 +45,7 @@ function Register({ onHide, onSignUp }) {
       <div className="box" id="signup">
         <div>
           <h2>Register</h2>
-          <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
+          <i id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></i>
         </div>
         <form id='registerForm' onSubmit={handleSubmit}>
           <input type="text" id="registerUsername" name="Username" placeholder="Username" required />
@@ -115,7 +115,7 @@ function ViewSession({ onHide, session, onEditSession, controller, setUpdateView
             <p>{"Session: " + session.sessionID}</p>
             <p>{"Member: " + member.memberID}</p>
           </div>
-          <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
+          <i id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></i>
         </div>
         <div className='dataView'>
           <div className="distance-duration-visual">
@@ -229,7 +229,7 @@ function Settings({ onHide, controller }) {
       <div className="box" id="settings">
         <div>
           <h2>Database Configuration</h2>
-          <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
+          <i id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></i>
         </div>
         <p>You may need to logout and create a new user when switching/ adding databases.</p>
         <br />
@@ -966,7 +966,7 @@ function NewSession({ onHide, controller, setNewSession, session, sessionData, s
       <div className="box" id="newSession">
         <div>
           <h2>{sessionData ? 'Edit ' + sessionData.sportType + ' Session' : 'New ' + session + ' Session'}</h2>
-          <button id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></button>
+          <i id="closeNewUser" className="icon icon-close" alt="Close" onClick={onHide}></i>
         </div>
         <form id='newSessionForm' onSubmit={handleSubmit}>
           {selectedSport === 'running' && <RunningForm onFormChange={handleFormChange} formData={sessionData} />}
