@@ -35,38 +35,32 @@ class TriathlonController {
         }
     }
 
-    async getAllTrainingSessions() {
+    // Database settings
+    async handleDatabaseInit(dbName, version, onHide) {
         try {
-            const trainingSessions = await this.triathlonData.getAllTrainingSessions()
-            return trainingSessions
+            await this.triathlonData.initialiseAndLoad(dbName, version)
+            localStorage.setItem('dbName', dbName)
+            localStorage.setItem('dbVersion', version)
+            console.log('Database initialised successfully')
+            toast.success('Database initialised successfully')
+            onHide(true)
         } catch (error) {
-            console.error("Error fetching training sessions:", error)
-            toast('Failed to load training sessions. Refresh to try again.', {
-                action: {
-                    label: 'Refresh',
-                    onClick: () => window.location.reload()
-                }
-            })
+            console.error('Error initialising database:', error)
+            toast.error(error.message)
+        }
+    }
+
+    async getDatabases() {
+        if (window.indexedDB && window.indexedDB.databases) {
+            const dbs = await window.indexedDB.databases()
+            return dbs.map(db => ({ name: db.name, version: db.version })).filter(db => db.name) // Filter out null names
+        } else {
+            console.error("IndexedDB databases() method is not supported in this browser.")
             return []
         }
     }
 
-    async sortTrainingSessionsByDate(trainingSessions) {
-        return await this.triathlonData.sortTrainingSessionsByDate(trainingSessions)
-    }
-
-    async sortTrainingSessionsBySportType(trainingSessions) {
-        return await this.triathlonData.sortTrainingSessionsBySportType(trainingSessions)
-    }
-
-    async sortTrainingSessionsByDistance(trainingSessions) {
-        return await this.triathlonData.sortTrainingSessionsByDistance(trainingSessions)
-    }
-
-    async searchTrainingSessions(searchType, searchQuery) {
-        return await this.triathlonData.searchTrainingSessions(searchType, searchQuery)
-    }
-
+    // User interactions
     async handleLogin(username, setLoggedIn, setFirstName) {
         try {
             const loginResult = await this.member.login(username)
@@ -109,7 +103,7 @@ class TriathlonController {
             return false
         }
     }
-    //User Testing
+    //User Information
     HandleGettingUserDetails() {
         const currentUser = window.localStorage.getItem("currentUser")
         if (currentUser) {
@@ -118,6 +112,7 @@ class TriathlonController {
         }
     }
 
+    // Calculations
     async calculateAveragePace() {
         const trainingSessions = await this.triathlonData.getAllTrainingSessions()
         console.log(trainingSessions)
@@ -150,48 +145,30 @@ class TriathlonController {
         return trainingSessions.filter(session => session.sportType === 'Cycling').length
     }
 
-    async handleNewSession(formData, setNewSession) {
-        try {
-            if (formData.sportType === 'Swimming') {
-                const parsedLapLength = parseFloat(formData.lapLength)
-                const parsedWaterTemp = parseFloat(formData.waterTemp)
-                const parsedLapTimes = formData.lapTimes.map(lapTime => parseFloat(lapTime))
-                console.log(formData.notes + formData.strokeType)
-                await this.triathlonData.CreateSwimmingSession(formData.date, formData.notes, parsedLapLength, formData.strokeType, parsedLapTimes, parsedWaterTemp)
-                console.log('Swimming session created successfully')
-                toast.success('Swimming Session Created')
-                this.addBadge()
-                setNewSession(false)
-            } else if (formData.sportType === 'Cycling') {
-                const { date, notes, distance, duration, terrain, bikeUsed, airTemp, weather, } = formData
-                const parsedDistance = parseFloat(distance)
-                const parsedDuration = parseFloat(duration)
-                const parsedAirTemp = parseFloat(airTemp)
-                await this.triathlonData.CreateCyclingSession(date, notes, parsedDistance, parsedDuration, terrain, bikeUsed, parsedAirTemp, weather)
-                console.log('Cycling session created successfully')
-                toast.success('Cycling Session Created')
-                this.addBadge()
-                setNewSession(false)
-            } else if (formData.sportType === 'Running') {
-                const { date, notes, distance, duration, shoesUsed, weather, airTemp } = formData
-                const parsedDistance = parseFloat(distance)
-                const parsedDuration = parseFloat(duration)
-                const parsedAirTemp = parseFloat(airTemp)
-                await this.triathlonData.CreateRunningSession(date, notes, parsedDistance, parsedDuration, shoesUsed, parsedAirTemp, weather)
-                console.log('Running session created successfully')
-                toast.success('Running Session Created')
-                this.addBadge()
-                setNewSession(false)
-            } else {
-                console.log('Invalid sport type')
-                toast.error('Invalid sport type')
-            }
-        } catch (error) {
-            console.error('Error creating session:', error)
-            toast.error(error.message)
-        }
+    async swimmingSessionDistance(lapLength, lapTimes) {
+        return this.triathlonData.getTotalDistance(lapLength, lapTimes)
     }
 
+    async swimmingSessionDuration(lapTimes) {
+        return this.triathlonData.getTotalDuration(lapTimes)
+    }
+
+    // Searches & Sorts
+    async getAllTrainingSessions() {
+        try {
+            const trainingSessions = await this.triathlonData.getAllTrainingSessions()
+            return trainingSessions
+        } catch (error) {
+            console.error("Error fetching training sessions:", error)
+            toast('Failed to load training sessions. Refresh to try again.', {
+                action: {
+                    label: 'Refresh',
+                    onClick: () => window.location.reload()
+                }
+            })
+            return []
+        }
+    }
     async findTrainingSessionByID(sessionID) {
         try {
             const sessionData = await this.triathlonData.findTrainingSessionByID(sessionID)
@@ -203,31 +180,65 @@ class TriathlonController {
         }
     }
 
-    async swimmingSessionDistance(lapLength, lapTimes) {
-        return this.triathlonData.getTotalDistance(lapLength, lapTimes)
-    }
-    async swimmingSessionDuration(lapTimes) {
-        return this.triathlonData.getTotalDuration(lapTimes)
+    async sortTrainingSessionsByDate(trainingSessions) {
+        return await this.triathlonData.sortTrainingSessionsByDate(trainingSessions)
     }
 
-    async checkHistory(sessionID) {
-        return this.triathlonData.checkHistory(sessionID)
+    async sortTrainingSessionsBySportType(trainingSessions) {
+        return await this.triathlonData.sortTrainingSessionsBySportType(trainingSessions)
     }
 
-    async restoreHistory(sessionID, onHide) {
+    async sortTrainingSessionsByDistance(trainingSessions) {
+        return await this.triathlonData.sortTrainingSessionsByDistance(trainingSessions)
+    }
+
+    async searchTrainingSessions(searchType, searchQuery) {
+        return await this.triathlonData.searchTrainingSessions(searchType, searchQuery)
+    }
+
+
+    // Training Sessions creation, editing, deleting
+    async handleNewSession(formData, setNewSession) {
         try {
-            const history = await this.triathlonData.restoreTrainingSession(sessionID)
-            toast.success('Training Session Restored.')
-            this.addBadge()
-            onHide(true)
-            return history
+            if (formData.sportType === 'Swimming') {
+                const parsedLapLength = parseFloat(formData.lapLength)
+                const parsedWaterTemp = parseFloat(formData.waterTemp)
+                const parsedLapTimes = formData.lapTimes.map(lapTime => parseFloat(lapTime))
+                console.log(formData.notes + formData.strokeType)
+                await this.triathlonData.CreateSwimmingSession(formData.date, formData.notes, parsedLapLength, formData.strokeType, parsedLapTimes, parsedWaterTemp)
+                console.log('Swimming session created successfully')
+                toast.success('Swimming Session Created')
+                this.addBadge() //Adds badge to PWA
+                setNewSession(false) // Hides and clears user form
+            } else if (formData.sportType === 'Cycling') {
+                const { date, notes, distance, duration, terrain, bikeUsed, airTemp, weather, } = formData
+                const parsedDistance = parseFloat(distance)
+                const parsedDuration = parseFloat(duration)
+                const parsedAirTemp = parseFloat(airTemp)
+                await this.triathlonData.CreateCyclingSession(date, notes, parsedDistance, parsedDuration, terrain, bikeUsed, parsedAirTemp, weather)
+                console.log('Cycling session created successfully')
+                toast.success('Cycling Session Created')
+                this.addBadge() //Adds badge to PWA
+                setNewSession(false) // Hides and clears user form
+            } else if (formData.sportType === 'Running') {
+                const { date, notes, distance, duration, shoesUsed, weather, airTemp } = formData
+                const parsedDistance = parseFloat(distance)
+                const parsedDuration = parseFloat(duration)
+                const parsedAirTemp = parseFloat(airTemp)
+                await this.triathlonData.CreateRunningSession(date, notes, parsedDistance, parsedDuration, shoesUsed, parsedAirTemp, weather)
+                console.log('Running session created successfully')
+                toast.success('Running Session Created')
+                this.addBadge() //Adds badge to PWA
+                setNewSession(false) // Hides and clears user form
+            } else {
+                console.log('Invalid sport type')
+                toast.error('Invalid sport type')
+            }
         } catch (error) {
-            console.error('Error restoring training session:', error)
+            console.error('Error creating session:', error)
             toast.error(error.message)
-            return null
         }
     }
-
     async editTrainingSession(sessionID, updatedSession, setNewSession) {
         try {
             await this.triathlonData.editTrainingSession(sessionID, updatedSession)
@@ -252,30 +263,26 @@ class TriathlonController {
         }
     }
 
-    async handleDatabaseInit(dbName, version, onHide) {
+    // History
+    async checkHistory(sessionID) {
+        return this.triathlonData.checkHistory(sessionID)
+    }
+
+    async restoreHistory(sessionID, onHide) {
         try {
-            await this.triathlonData.initialiseAndLoad(dbName, version)
-            localStorage.setItem('dbName', dbName)
-            localStorage.setItem('dbVersion', version)
-            console.log('Database initialised successfully')
-            toast.success('Database initialised successfully')
+            const history = await this.triathlonData.restoreTrainingSession(sessionID)
+            toast.success('Training Session Restored.')
+            this.addBadge()
             onHide(true)
+            return history
         } catch (error) {
-            console.error('Error initialising database:', error)
+            console.error('Error restoring training session:', error)
             toast.error(error.message)
+            return null
         }
     }
 
-    async getDatabases() {
-        if (window.indexedDB && window.indexedDB.databases) {
-            const dbs = await window.indexedDB.databases()
-            return dbs.map(db => ({ name: db.name, version: db.version })).filter(db => db.name) // Filter out null names
-        } else {
-            console.error("IndexedDB databases() method is not supported in this browser.")
-            return []
-        }
-    }
-
+    // PWA badges
     async addBadge() {
         // Check if the Badging API is supported
         if ("setAppBadge" in navigator && "clearAppBadge" in navigator) {
