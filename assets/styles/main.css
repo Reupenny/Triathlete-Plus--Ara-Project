@@ -236,6 +236,11 @@ button:hover {
     padding-right: .5em;
 }
 
+/* Search */
+#newSearchType {
+    max-width: 100px;
+}
+
 .error>div,
 .error p {
     border-color: var(--pink);

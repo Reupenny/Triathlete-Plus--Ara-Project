@@ -21,12 +21,7 @@ export class TriathlonData {
         }
     }
 
-    async CreateSwimmingSession(date, notes, lapLength, strokeType, lapTimes, waterTemp) {
-        // Handle missing date:  If no date is provided, use the current date
-        if (!date) {
-            // Use today's date in YYYY-MM-DD format
-            date = format(new Date(), 'yyyy-MM-dd')
-        }
+    async CreateSwimmingSession(date = Date(), notes = '', lapLength = 0, strokeType = 'Freestyle', lapTimes = [], waterTemp = 0) {
         // Type Checks and Existence Checks
         if (typeof lapLength !== 'number') {
             throw new Error("Lap Length must be a number");
@@ -48,12 +43,12 @@ export class TriathlonData {
         if (waterTemp < 0 || waterTemp > 40) {
             throw new Error("Water temperature must be between 0 and 40 degrees Celsius.");
         }
-        // Format Validation Date
-        // Parse and validate YYYY-MM-DD format
-        const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
-        if (!isValid(parsedDate)) {
-            throw new Error("Invalid date. Please use YYYY-MM-DD and ensure a valid date.");
-        }
+        // // Format Validation Date
+        // // Parse and validate YYYY-MM-DD format
+        // const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+        // if (!isValid(parsedDate)) {
+        //     throw new Error("Invalid date. Please use YYYY-MM-DD and ensure a valid date.");
+        // }
         // Array Validation
         if (!Array.isArray(lapTimes)) {
             throw new Error("Lap times must be an array.");
@@ -89,12 +84,7 @@ export class TriathlonData {
         }
     }
 
-    async CreateCyclingSession(date, notes, distance, duration, terrain, bikeUsed, airTemp, weather) {
-        // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
-        if (!date) {
-            // Use today's date in YYYY-MM-DD format
-            date = format(new Date(), 'yyyy-MM-dd');
-        }
+    async CreateCyclingSession(date = Date(), notes = '', distance = 0, duration = 0, terrain = '', bikeUsed, airTemp = 0, weather = '') {
         // Type Checks and Existence Checks
         if (typeof distance !== 'number') {
             throw new Error("Distance must be a number.");
@@ -117,9 +107,6 @@ export class TriathlonData {
         if (typeof bikeUsed !== 'string') {
             throw new Error("Bike Used must be a string.");
         }
-        if (!weather) {
-            weather = "";
-        }
         if (weather && typeof weather !== 'string') {
             throw new Error("Weather Condition must be a string.");
         }
@@ -137,12 +124,12 @@ export class TriathlonData {
             throw new Error("Air temperature must be between -20 and 50 degrees Celsius.");
         }
 
-        // Format Validation Date
-        // Parse and validate YYYY-MM-DD format
-        const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
-        if (!isValid(parsedDate)) {
-            throw new Error("Invalid date. Please use YYYY-MM-DD and ensure a valid date.");
-        }
+        // // Format Validation Date
+        // // Parse and validate YYYY-MM-DD format
+        // const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+        // if (!isValid(parsedDate)) {
+        //     throw new Error("Invalid date. Please use YYYY-MM-DD and ensure a valid date.");
+        // }
 
         try {
             const sessionID = CyclingSession.generateSessionID();
@@ -167,12 +154,7 @@ export class TriathlonData {
         }
     }
 
-    async CreateRunningSession(date, notes, distance, duration, shoesUsed, airTemp, weather) {
-        // Handle missing date:  If no date is provided, use the current date in 'en-NZ' format
-        if (!date) {
-            // Use today's date in YYYY-MM-DD format
-            date = format(new Date(), 'yyyy-MM-dd');
-        }
+    async CreateRunningSession(date = Date(), notes = '', distance = 0, duration = 0, shoesUsed, airTemp = 0, weather = '') {
         // Type Checks and Existence Checks
         if (typeof distance !== 'number') {
             throw new Error("Distance must be a number.");
@@ -209,12 +191,12 @@ export class TriathlonData {
             throw new Error("Air temperature must be between -20 and 50 degrees Celsius.");
         }
 
-        // Format Validation Date
-        // Parse and validate YYYY-MM-DD format
-        const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
-        if (!isValid(parsedDate)) {
-            throw new Error("Invalid date. Please use YYYY-MM-DD and ensure a valid date.");
-        }
+        // // Format Validation Date
+        // // Parse and validate YYYY-MM-DD format
+        // const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+        // if (!isValid(parsedDate)) {
+        //     throw new Error("Invalid date. Please use YYYY-MM-DD and ensure a valid date.");
+        // }
         try {
             const sessionID = RunningSession.generateSessionID();
             const newSession = new RunningSession(date, notes, distance, duration, shoesUsed, airTemp, weather, sessionID);
@@ -344,12 +326,26 @@ export class TriathlonData {
 
         const trainingSessions = await TriathlonData.database.getAllData("TrainingSessions")
         const results = []
+        if (!searchType) {
+            trainingSessions.forEach(session => {
+                // Check if any value in the session object includes the searchQuery
+                const sessionValues = Object.values(session);
+                const foundMatch = sessionValues.some(value =>
+                    value !== null && value !== undefined && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+                );
 
-        trainingSessions.forEach(session => {
-            if (session.memberID === loggedInMemberID && session[searchType] && session[searchType].toString().toLowerCase().includes(searchQuery.toLowerCase())) {
-                results.push(session)
-            }
-        });
+                if (session.memberID === loggedInMemberID && foundMatch) {
+                    results.push(session);
+                }
+            });
+        }
+        else {
+            trainingSessions.forEach(session => {
+                if (session.memberID === loggedInMemberID && session[searchType] && session[searchType].toString().toLowerCase().includes(searchQuery.toLowerCase())) {
+                    results.push(session)
+                }
+            });
+        }
 
         return results
     }

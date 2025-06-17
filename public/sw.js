@@ -45,8 +45,8 @@ self.addEventListener("install", (event) => {
         "./assets/Icons-B4YL_DAL.eot",
         "./assets/Icons-DCT8MgtH.svg",
         "./assets/app-0zWIKYRp.webmanifest",
-        "/assets/index-Bpd5IfZ4.css",
-        "/assets/index-CNlV8CYo.js"
+        "/assets/index-DIAefYK5.css",
+        "/assets/index-Lf7ddgxP.js"
       ];
       for (const asset of assets) {
         try {

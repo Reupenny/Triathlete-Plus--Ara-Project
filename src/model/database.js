@@ -1,4 +1,5 @@
 import "core-js/stable/structured-clone"
+import { toast } from 'sonner'
 
 export class Database {
 
@@ -15,7 +16,18 @@ export class Database {
 
     async init(dbName, version) {
         this.dbName = dbName
+        console.log("DbName2: " + this.dbName)
         return new Promise((resolve, reject) => {
+            if (!this.dbName) {
+                this.dbName = "TryathlonApp" // ensures connecting to a DB
+                console.warn("Database name is undefined, connecting to default.")// puts a warn in the console
+                toast.error('Database name is undefined, connecting to default. Please Refresh.', { // shwows user an error and a refresh fix
+                    action: {
+                        label: 'Refresh',
+                        onClick: () => window.location.reload()
+                    }
+                })
+            }
             // Open a connection to the database
             const request = window.indexedDB.open(this.dbName, version)
 

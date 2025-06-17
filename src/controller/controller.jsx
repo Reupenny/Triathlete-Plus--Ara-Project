@@ -5,7 +5,14 @@ class TriathlonController {
         this.triathlonData = triathlonData
         this.member = member
 
-        // Setup
+        this.setupDatabase();
+
+        this.findTrainingSessionByID = this.findTrainingSessionByID.bind(this)
+        this.editTrainingSession = this.editTrainingSession.bind(this)
+        this.HandleGettingUserDetails = this.HandleGettingUserDetails.bind(this)
+    }
+
+    async setupDatabase() {
         try {
             let dbName = localStorage.getItem('dbName')
             if (!dbName) {
@@ -19,16 +26,13 @@ class TriathlonController {
             } else {
                 dbVersion = parseInt(dbVersion)
             }
-            this.triathlonData.initialiseAndLoad(dbName, dbVersion)
+            await this.triathlonData.initialiseAndLoad(dbName, dbVersion)
             console.log('setup good')
-            toast.success('Connected to Database')
+            // toast.success('Connected to Database')
         } catch (error) {
             console.error('Error setting up:', error)
             toast.error(error.message)
         }
-        this.findTrainingSessionByID = this.findTrainingSessionByID.bind(this)
-        this.editTrainingSession = this.editTrainingSession.bind(this)
-        this.HandleGettingUserDetails = this.HandleGettingUserDetails.bind(this)
     }
 
     async getAllTrainingSessions() {
@@ -96,6 +100,7 @@ class TriathlonController {
         try {
             await this.member.logout()
             toast.success('Logged out')
+            this.clearBadge() // Clears badge count on logout
             setLoggedIn(false)
             return true
         } catch (error) {
@@ -155,6 +160,7 @@ class TriathlonController {
                 await this.triathlonData.CreateSwimmingSession(formData.date, formData.notes, parsedLapLength, formData.strokeType, parsedLapTimes, parsedWaterTemp)
                 console.log('Swimming session created successfully')
                 toast.success('Swimming Session Created')
+                this.addBadge()
                 setNewSession(false)
             } else if (formData.sportType === 'Cycling') {
                 const { date, notes, distance, duration, terrain, bikeUsed, airTemp, weather, } = formData
@@ -164,6 +170,7 @@ class TriathlonController {
                 await this.triathlonData.CreateCyclingSession(date, notes, parsedDistance, parsedDuration, terrain, bikeUsed, parsedAirTemp, weather)
                 console.log('Cycling session created successfully')
                 toast.success('Cycling Session Created')
+                this.addBadge()
                 setNewSession(false)
             } else if (formData.sportType === 'Running') {
                 const { date, notes, distance, duration, shoesUsed, weather, airTemp } = formData
@@ -173,6 +180,7 @@ class TriathlonController {
                 await this.triathlonData.CreateRunningSession(date, notes, parsedDistance, parsedDuration, shoesUsed, parsedAirTemp, weather)
                 console.log('Running session created successfully')
                 toast.success('Running Session Created')
+                this.addBadge()
                 setNewSession(false)
             } else {
                 console.log('Invalid sport type')
@@ -210,6 +218,7 @@ class TriathlonController {
         try {
             const history = await this.triathlonData.restoreTrainingSession(sessionID)
             toast.success('Training Session Restored.')
+            this.addBadge()
             onHide(true)
             return history
         } catch (error) {
@@ -225,6 +234,7 @@ class TriathlonController {
             console.log('Training session edited successfully')
             toast.success('Training session edited successfully')
             setNewSession(false)
+            this.addBadge()
         } catch (error) {
             console.error('Error editing training session:', error)
             toast.error(error.message)
@@ -235,6 +245,7 @@ class TriathlonController {
             await this.triathlonData.deleteTrainingSession(sessionID)
             console.log('Training session deleted successfully')
             toast.success('Training session deleted successfully')
+            this.addBadge()
         } catch (error) {
             console.error('Error deleting training session:', error)
             toast.error(error.message)
@@ -262,6 +273,39 @@ class TriathlonController {
         } else {
             console.error("IndexedDB databases() method is not supported in this browser.")
             return []
+        }
+    }
+
+    async addBadge() {
+        // Check if the Badging API is supported
+        if ("setAppBadge" in navigator && "clearAppBadge" in navigator) {
+            try {
+                let currentBadgeCount = parseInt(
+                    localStorage.getItem("badgeCount") || "0"
+                ) // Get the current badge count from local storage
+                currentBadgeCount++ // Increment the badge count
+                await navigator.setAppBadge(currentBadgeCount) // Set the new badge count
+                localStorage.setItem("badgeCount", currentBadgeCount) // Store the updated badge count in local storage
+            } catch (error) {
+                console.error("Error updating badge count:", error)
+            }
+        } else {
+            console.warn("Badging API is not supported in this browser.")
+        }
+    }
+
+    async clearBadge() {
+        // Check if the Badging API is supported
+        if ("setAppBadge" in navigator && "clearAppBadge" in navigator) {
+            try {
+                let currentBadgeCount = 0
+                await navigator.clearAppBadge() // Clears badge
+                localStorage.setItem("badgeCount", currentBadgeCount) // Resets badge count
+            } catch (error) {
+                console.error("Error updating badge count:", error)
+            }
+        } else {
+            console.warn("Badging API is not supported in this browser.")
         }
     }
 }

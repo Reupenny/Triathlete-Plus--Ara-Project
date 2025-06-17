@@ -269,6 +269,13 @@ function Settings({ onHide, controller }) {
           </label>
         </div>
         <button onClick={() => controller.handleDatabaseInit(dbName, dbVersion, onHide)}>Connect to Database</button>
+        <br />
+        <div>
+          <h2>Other Settings</h2>
+        </div>
+        <div>
+          <button onClick={() => controller.clearBadge()} >Clear Badges</button>
+        </div>
       </div>
     </>
   )
@@ -299,8 +306,7 @@ function UserPage({ logout, onNewSession, firstName, controller, setTrainingSess
       setSwimmingSessions(controller.calculateSwimmingSessions())
       setCyclingSessions(controller.calculateCyclingSessions())
 
-      if (searchType && searchQuery) {
-        console.log(searchType)
+      if (searchQuery) {
         sessions = await controller.searchTrainingSessions(searchType, searchQuery)
       }
 
@@ -358,26 +364,25 @@ function UserPage({ logout, onNewSession, firstName, controller, setTrainingSess
         <img className='logo' src={Logo} alt="Triathlete plus logo" />
         <br />
         <br />
-        <h4>Log a session</h4>
+        <h3>Log a session</h3>
         <div className='center'>
           <button className='pink button-big' id='running' onClick={() => onNewSession('running')}>Running</button>
           <button className='blue button-big' id='swimming' onClick={() => onNewSession('swimming')}>Swimming</button>
           <button className='orange button-big' id='cycling' onClick={() => onNewSession('cycling')}>Cycling</button>
         </div>
-
-        <div className='row'> <h3>Sort by: </h3>
-          <button onClick={() => handleSort('date')}>Date</button>
-          <button onClick={() => handleSort('sport')}>Type</button>
-          <button onClick={() => handleSort('distance')}>Distance</button>
-        </div>
+        <br />
         <form>
-          <div className="input-container">
-            <label htmlFor="newSearchType">
-              Search Type
-            </label>
+          <div className="row">
+            <input
+              type="text"
+              id="searchSessions"
+              placeholder="Search training sessions"
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
             <select id="newSearchType" name="newSearchType" onChange={(e) => setSearchType(e.target.value)}>
-              <option value="" disabled>Search Type</option>
+              <option value="" selected disabled>Filter by</option>
               <option value="notes">Notes</option>
+              <option value="date">Date</option>
               <option value="bikeUsed">Bike</option>
               <option value="shoesUsed">Shoes</option>
               <option value="distance">Distance</option>
@@ -385,13 +390,13 @@ function UserPage({ logout, onNewSession, firstName, controller, setTrainingSess
               <option value="sportType">Sport</option>
             </select>
           </div>
-          <input
-            type="text"
-            id="searchSessions"
-            placeholder="Search training sessions"
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
         </form>
+        <div className='row'> <h4>Sort by: </h4>
+          <button onClick={() => handleSort('date')}>Date</button>
+          <button onClick={() => handleSort('sport')}>Type</button>
+          <button onClick={() => handleSort('distance')}>Distance</button>
+        </div>
+        <br />
         <div>
           <div className='card'>
             <p>Average pace</p>
@@ -1019,63 +1024,69 @@ function MainPanel({ controller, onEditSession, onViewSession, trainingSessions,
               </tr>
             </thead>
             <tbody>
-              {trainingSessions.map((entry, index) => {
-                const sessionDate = new Date(entry.date)
-                const formattedDate = sessionDate.toLocaleDateString('en-NZ')
-                return (
-                  <tr key={index} data-sport={entry.sportType}>
-                    <td className={entry.sportType + ' sport-type'}><i className={'icon icon-' + entry.sportType}></i> {entry.sportType}</td>
-                    <td>{formattedDate}</td>
-                    <td>
-                      <div className="distance-duration-visual">
-                        {Array.isArray(entry.lapTimes) && (
+              {trainingSessions && trainingSessions.length > 0 ? (
+                trainingSessions.map((entry, index) => {
+                  const sessionDate = new Date(entry.date)
+                  const formattedDate = sessionDate.toLocaleDateString('en-NZ')
+                  return (
+                    <tr key={index} data-sport={entry.sportType}>
+                      <td className={entry.sportType + ' sport-type'}><i className={'icon icon-' + entry.sportType}></i> {entry.sportType}</td>
+                      <td>{formattedDate}</td>
+                      <td>
+                        <div className="distance-duration-visual">
+                          {Array.isArray(entry.lapTimes) && (
+                            <>
+                              {entry.lapTimes.map((lapTime, lapIndex) => (
+                                <div key={lapIndex}>
+                                  <div
+                                    className="lap-dot"
+                                    style={{ left: `${(lapIndex + 1) * (100 / entry.lapTimes.length)}%` }}
+                                  ></div>
+                                  <div
+                                    className="lap-time-label"
+                                    style={{ left: `${(lapIndex + 1) * (100 / entry.lapTimes.length)}%` }}
+                                  >{lapTime + 's'}</div>
+                                </div>
+                              ))}
+                              <div className="end-dot"></div>
+                              <span className="distance-label">{`${entry.calculatedSwimmingDistance} Km / ${entry.lapLength}m laps`}</span>
+                            </>
+                          )}
+                          {entry.sportType !== 'Swimming' && (
+                            <>
+                              <div className="start-dot"></div>
+                              <div className="end-dot" style={{ left: `100%` }}></div>
+                              <span className="distance-label">{`${entry.distance} Km`}</span>
+                            </>
+                          )}
+                        </div>
+                      </td><td>
+                        {entry.sportType === 'Swimming' && (
                           <>
-                            {entry.lapTimes.map((lapTime, lapIndex) => (
-                              <div key={lapIndex}>
-                                <div
-                                  className="lap-dot"
-                                  style={{ left: `${(lapIndex + 1) * (100 / entry.lapTimes.length)}%` }}
-                                ></div>
-                                <div
-                                  className="lap-time-label"
-                                  style={{ left: `${(lapIndex + 1) * (100 / entry.lapTimes.length)}%` }}
-                                >{lapTime + 's'}</div>
-                              </div>
-                            ))}
-                            <div className="end-dot"></div>
-                            <span className="distance-label">{`${entry.calculatedSwimmingDistance} Km / ${entry.lapLength}m laps`}</span>
+                            <span className='end-label'>{entry.calculatedSwimmingDuration} min</span>
                           </>
-                        )}
+                        )
+                        }
                         {entry.sportType !== 'Swimming' && (
                           <>
-                            <div className="start-dot"></div>
-                            <div className="end-dot" style={{ left: `100%` }}></div>
-                            <span className="distance-label">{`${entry.distance} Km`}</span>
+                            <span className='end-label'>{entry.duration % 1 === 0 ? entry.duration : entry.duration.toFixed(2)} min</span>
                           </>
-                        )}
-                      </div>
-                    </td><td>
-                      {entry.sportType === 'Swimming' && (
-                        <>
-                          <span className='end-label'>{entry.calculatedSwimmingDuration} min</span>
-                        </>
-                      )
-                      }
-                      {entry.sportType !== 'Swimming' && (
-                        <>
-                          <span className='end-label'>{entry.duration % 1 === 0 ? entry.duration : entry.duration.toFixed(2)} min</span>
-                        </>
-                      )
-                      }
-                    </td>
-                    <td className="more-cell">
-                      <i className='icon icon-info' onClick={() => handleView(entry)}></i>
-                      <i className='icon icon-edit' onClick={() => handleEdit(entry)}></i>
-                      <i className='icon icon-trash' onClick={() => handleDelete(entry.sessionID)}></i>
-                    </td>
-                  </tr>
-                )
-              })}
+                        )
+                        }
+                      </td>
+                      <td className="more-cell">
+                        <i className='icon icon-info' onClick={() => handleView(entry)}></i>
+                        <i className='icon icon-edit' onClick={() => handleEdit(entry)}></i>
+                        <i className='icon icon-trash' onClick={() => handleDelete(entry.sessionID)}></i>
+                      </td>
+                    </tr>
+                  )
+                })
+              ) : (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center' }}>No training sessions found.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

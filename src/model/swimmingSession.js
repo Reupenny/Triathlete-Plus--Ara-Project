@@ -9,6 +9,11 @@ export class SwimmingSession extends TrainingSession {
         this.lapTimes = lapTimes;
         this.waterTemp = waterTemp;// Celcius
     }
+
+    get lapTimesData() {
+        return this.lapTimes;
+    }
+
     getDetails() {
         return `${super.getDetails()}, Lap Length: ${this.lapLength}, Stroke: ${this.strokeType}, Laps: ${this.laps}, Water Temp: ${this.waterTemp}`;
     }
@@ -20,6 +25,6 @@ export class SwimmingSession extends TrainingSession {
 
     getTotalDuration() {
         // Calculates total time swimming 
-        return this.lapTimes.reduce((sum, time) => sum + time, 0) / 60;
+        return this.lapTimesData.reduce((sum, time) => sum + time, 0) / 60;
     }
 }
