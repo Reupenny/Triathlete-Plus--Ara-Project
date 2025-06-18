@@ -1,3 +1,5 @@
+// Adds glowing background
+
 const glowCircle = document.querySelector('.glow-circle');
 let mouseX = 0;
 let mouseY = 0;
