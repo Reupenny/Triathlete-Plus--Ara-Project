@@ -15,12 +15,12 @@ self.addEventListener("install", (event) => {
         "./assets/images/favicon.ico",
         "./assets/images/icon192.png",
         "./assets/images/icon512.png",
-        "./assets/Logo-D1p5Mq8D.webp",
-        "./assets/Icons-B4YL_DAL.eot",
-        "./assets/Icons-DCT8MgtH.svg",
-        "./assets/app-0zWIKYRp.webmanifest",
-        "/assets/index-DIAefYK5.css",
-        "/assets/index-D2FDjxG8.js"
+        "./assets/Logo.webp",
+        "./assets/Icons.eot",
+        "./assets/Icons.svg",
+        "./assets/app.webmanifest",
+        "/assets/index.css",
+        "/assets/index.js"
       ];
       for (const asset of assets) {
         try {
