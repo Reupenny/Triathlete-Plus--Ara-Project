@@ -27,7 +27,6 @@ class TriathlonController {
                 dbVersion = parseInt(dbVersion)
             }
             await this.triathlonData.initialiseAndLoad(dbName, dbVersion)
-            console.log('setup good')
             // toast.success('Connected to Database')
         } catch (error) {
             console.error('Error setting up:', error)
@@ -60,6 +59,27 @@ class TriathlonController {
         }
     }
 
+    // Database calculations
+    async calculateRunningSessions() {
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
+        return trainingSessions.filter(session => session.sportType === 'Running').length
+    }
+
+    async calculateSwimmingSessions() {
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
+        return trainingSessions.filter(session => session.sportType === 'Swimming').length
+    }
+
+    async calculateCyclingSessions() {
+        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
+        return trainingSessions.filter(session => session.sportType === 'Cycling').length
+    }
+
+    async calculateTotalMembers() {
+        let result = await this.member.getAllMembers()
+        return parseInt(result.length)
+    }
+
     // User interactions
     async handleLogin(username, setLoggedIn, setFirstName) {
         try {
@@ -70,7 +90,7 @@ class TriathlonController {
             console.log('User Logged in')
             toast.success('Logged in')
             setLoggedIn(true)
-            setFirstName(loginResult.fName)
+            // setFirstName(loginResult.fName)
             return loginResult
         } catch (error) {
             console.error('Error Logging in user:', error)
@@ -115,34 +135,12 @@ class TriathlonController {
     // Calculations
     async calculateAveragePace() {
         const trainingSessions = await this.triathlonData.getAllTrainingSessions()
-        console.log(trainingSessions)
         return await this.triathlonData.calculateAveragePace(trainingSessions)
     }
 
     async calculateTotalDistance() {
         const trainingSessions = await this.triathlonData.getAllTrainingSessions()
-        console.log(trainingSessions)
         return await this.triathlonData.calculateTotalDistanceForDatePeriod(trainingSessions)
-    }
-
-    async calculateTotalMembers() {
-        let result = await this.member.getAllMembers()
-        return parseInt(result.length)
-    }
-
-    async calculateRunningSessions() {
-        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
-        return trainingSessions.filter(session => session.sportType === 'Running').length
-    }
-
-    async calculateSwimmingSessions() {
-        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
-        return trainingSessions.filter(session => session.sportType === 'Swimming').length
-    }
-
-    async calculateCyclingSessions() {
-        const trainingSessions = await this.triathlonData.getAllTrainingSessions()
-        return trainingSessions.filter(session => session.sportType === 'Cycling').length
     }
 
     async swimmingSessionDistance(lapLength, lapTimes) {
@@ -239,13 +237,14 @@ class TriathlonController {
             toast.error(error.message)
         }
     }
+
     async editTrainingSession(sessionID, updatedSession, setNewSession) {
         try {
             await this.triathlonData.editTrainingSession(sessionID, updatedSession)
             console.log('Training session edited successfully')
             toast.success('Training session edited successfully')
             setNewSession(false)
-            this.addBadge()
+            this.addBadge() //Adds badge to PWA
         } catch (error) {
             console.error('Error editing training session:', error)
             toast.error(error.message)
@@ -256,7 +255,6 @@ class TriathlonController {
             await this.triathlonData.deleteTrainingSession(sessionID)
             console.log('Training session deleted successfully')
             toast.success('Training session deleted successfully')
-            this.addBadge()
         } catch (error) {
             console.error('Error deleting training session:', error)
             toast.error(error.message)

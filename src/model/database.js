@@ -16,7 +16,6 @@ export class Database {
 
     async init(dbName, version) {
         this.dbName = dbName
-        console.log("DbName2: " + this.dbName)
         return new Promise((resolve, reject) => {
             if (!this.dbName) {
                 this.dbName = "TryathlonApp" // ensures connecting to a DB

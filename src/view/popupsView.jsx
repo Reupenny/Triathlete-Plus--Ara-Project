@@ -36,11 +36,11 @@ export function Register({ onHide, onSignUp }) {
 // 
 
 export function ViewSession({ onHide, session, onEditSession, controller, setUpdateView }) {
+    const [historyCheckResult, setHistoryCheckResult] = useState(false)
     const [swimmingDistance, setSwimmingDistance] = useState(0)
     const [swimmingDuration, setSwimmingDuration] = useState(0)
     const sessionDate = new Date(session.date)
     const formattedDate = sessionDate.toLocaleDateString('en-NZ')
-    const [historyCheckResult, setHistoryCheckResult] = useState(false)
     const member = JSON.parse(session?.memberID || null)
 
     useEffect(() => {

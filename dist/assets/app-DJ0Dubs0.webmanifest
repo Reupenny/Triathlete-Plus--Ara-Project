@@ -19,5 +19,14 @@
       "type": "image/png",
       "sizes": "192x192"
     }
+  ],
+  "screenshots": [
+    {
+      "src": "../assets/images/screenshot.png",
+      "sizes": "1254x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Triathlete+ main screen."
+    }
   ]
 }

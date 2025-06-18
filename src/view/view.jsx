@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-
 import { Toaster, toast } from 'sonner'
 
 // Import views
 import NewSession from './createSessionView'
 import { Settings, ViewSession, Register } from './popupsView'
 import './glowView'
+
 // Import assets
 import Logo from '../../assets/Logo.webp'
 
@@ -311,13 +311,13 @@ function SidePanel({ onRegister, onSubmit, loggedIn, logout, onNewSession, first
 
 function TriathlonView({ controller }) {
   const userDetails = controller.HandleGettingUserDetails() // Gets user details
+  const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : "") // Show users name
   const [showRegister, setShowRegister] = useState(false)
   const [newSession, setNewSession] = useState(false)
   const [changeSettings, setChangeSettings] = useState(false)
   const [viewSessionData, setViewSession] = useState(null)
   const [newSessionData, setNewSessionData] = useState(null)
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem('LoggedIn') === 'true')
-  const [firstName, setFirstName] = useState(userDetails ? userDetails.fName : "") // Show users name
   const [trainingSessions, setTrainingSessions] = useState([])
   const [updateView, setUpdateView] = useState(false)
 
