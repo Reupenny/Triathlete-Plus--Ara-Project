@@ -8,6 +8,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        //Removes the hash at the end of files
         assetFileNames: "assets/[name][extname]",
         entryFileNames: "assets/[name].js"
       }

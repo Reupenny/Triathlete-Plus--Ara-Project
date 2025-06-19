@@ -20,6 +20,14 @@ export class TriathlonData {
             throw error
         }
     }
+    async deleteDatabase(dbName) {
+        try {
+            await TriathlonData.database.deleteDatabase(dbName)
+        } catch (error) {
+            throw error
+        }
+    }
+
 
     async CreateSwimmingSession(date = Date(), notes = '', lapLength = 0, strokeType = 'Freestyle', lapTimes = [], waterTemp = 0) {
         // Type Checks and Existence Checks

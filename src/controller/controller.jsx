@@ -58,6 +58,22 @@ class TriathlonController {
             return []
         }
     }
+    async deleteDatabase(dbName, onHide) {
+        try {
+            // Checks if user is using the database to be deleted
+            if (localStorage.getItem('dbName') == dbName) {
+                toast.error('Currently using selected database.')
+                return
+            }
+            await this.triathlonData.deleteDatabase(dbName)
+            console.log('Database removed successfully')
+            toast.success('Database removed successfully')
+            onHide(true)
+        } catch (error) {
+            console.error('Error deleting database:', error)
+            toast.error(error.message)
+        }
+    }
 
     // Database calculations
     async calculateRunningSessions() {

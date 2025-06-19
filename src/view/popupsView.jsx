@@ -203,6 +203,12 @@ export function Settings({ onHide, controller }) {
         }
         fetchDatabases()
     }, [controller])
+
+    const handleDelete = async (dbName) => {
+        await controller.deleteDatabase(dbName, onHide)
+        setUpdateView(prev => !prev)
+    }
+
     return (
         <>
             <div id="hide" onClick={onHide}></div>
@@ -218,6 +224,7 @@ export function Settings({ onHide, controller }) {
                     {databases.map((db, index) => (
                         <div className='card' key={index}>{db.name}
                             <button onClick={() => controller.handleDatabaseInit(db.name, db.version, onHide)} >Connect</button>
+                            <i className='icon icon-trash' onClick={() => handleDelete(db.name)}></i>
                         </div>
                     ))}
                 </div>

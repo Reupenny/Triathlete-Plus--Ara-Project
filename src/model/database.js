@@ -152,11 +152,11 @@ export class Database {
     // 
     // 
     // Deletes the entire database
-    async deleteDatabase() {
+    async deleteDatabase(dbName) {
         return new Promise((resolve, reject) => {
             // Close the database before deleting it
             this.close()
-            const request = window.indexedDB.deleteDatabase(this.dbName)
+            const request = window.indexedDB.deleteDatabase(dbName)
 
             // Handle errors when deleting the database
             request.onerror = (event) => {
