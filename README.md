@@ -1,5 +1,5 @@
 ![Triathete +](./assets/Logo.webp)
 
-#### Project for Ara
+## Project for Ara
 Features
 - PWA
