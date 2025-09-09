@@ -1,3 +1,5 @@
+
+![Triathete +](./assets/Logo.webp)
 This project is for the Best Programming Practices (Web & Mobile Development) course (BCDE211) at Ara Institute of Canterbury. It combines work from two assessments to create a Progressive Web App (PWA) for people who do triathlons.
 
 ## Course Information
