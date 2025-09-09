@@ -1,4 +1,3 @@
-
 ![Triathete +](./assets/Logo.webp)
 This project is for the Best Programming Practices (Web & Mobile Development) course (BCDE211) at Ara Institute of Canterbury. It combines work from two assessments to create a Progressive Web App (PWA) for people who do triathlons.
 
@@ -63,14 +62,13 @@ In the project directory, you can run the following commands:
 
 - `npm run dev`
   Runs the app in development mode. Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
-- `npm test`
-  Starts the test runner in interactive watch mode.
 - `npm run build`
   Builds the app for production to the `dist` folder.
 - `npm run preview`
   Serves the production build locally for previewing.
 - `npm start`
   Starts a local HTTPS server for the PWA. This is needed for the service worker and other PWA features.
+  for this to work, you will need to have created a local SSL certificate and have it located in a folder called `security` and have them named `localhost.crt` and `localhost.key`
 
 ## Screenshots
 
@@ -80,9 +78,7 @@ Below are some screenshots of the application in action.
 
 - **Main Dashboard:**
   ![Main Dashboard](path/to/your/screenshot.png)
-
 - **Adding a New Session:**
   ![Adding a New Session](path/to/your/screenshot.png)
-
 - **Editing a Session:**
   ![Editing a Session](path/to/your/screenshot.png)

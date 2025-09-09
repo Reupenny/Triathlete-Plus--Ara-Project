@@ -4,7 +4,6 @@
   "description": "An app for triathletes to track basic stats about swimming, running and cycling.",
   "main": "index.html",
   "scripts": {
-    "test": "jest",
     "elint": "eslint ./js/*.js",
     "dev": "vite",
     "build": "vite build",
