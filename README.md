@@ -68,7 +68,7 @@ In the project directory, you can run the following commands:
   Serves the production build locally for previewing.
 - `npm start`
   Starts a local HTTPS server for the PWA. This is needed for the service worker and other PWA features.
-  for this to work, you will need to have created a local SSL certificate and have it located in a folder called `security` and have them named `localhost.crt` and `localhost.key`
+   For this to work, you will need to have created a local SSL certificate and have it located in a folder called `security` and have them named `localhost.crt` and `localhost.key`
 
 ## Screenshots
 
